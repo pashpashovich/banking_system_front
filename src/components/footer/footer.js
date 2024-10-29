@@ -11,7 +11,7 @@ function Footer() {
 
   return (
     <Box mt={6} py={6} px={3} bgcolor="#212121" color="white">
-      <Grid container spacing={4} justifyContent="center">
+      <Grid ml={6} container spacing={4} justifyContent="center">
         {sections.map((section, index) => (
           <Grid item xs={12} sm={3} key={index}>
             <Typography

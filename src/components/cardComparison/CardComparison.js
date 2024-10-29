@@ -1,12 +1,16 @@
 import React from 'react';
 import { Typography, Grid, Card, Box, CardContent, CardMedia } from '@mui/material';
-import gold from '../../images/red_card.png';
+import red from '../../images/red_card.png';
+import blue from '../../images/blue_card.png';
+import gold from '../../images/gold_card.png';
+
+
 
 function CardComparison() {
   const cards = [
-    { color: 'red', title: 'Золотая', description: 'Помогает сохранять средства' },
-    { color: 'blue', title: 'Золотая', description: 'Помогает сохранять средства' },
-    { color: 'gold', title: 'Золотая', description: 'Помогает сохранять средства' }
+    { color: 'blue', title: 'Синяя', description: 'Помогает сохранять средства', picture: blue },
+    { color: 'red', title: 'Красная', description: 'Помогает сохранять средства', picture: red },
+    { color: 'gold', title: 'Золотая', description: 'Помогает сохранять средства', picture: gold }
   ];
 
   return (
@@ -29,7 +33,7 @@ function CardComparison() {
               <CardMedia
                 component="img"
                 height="160"
-                image={gold}
+                image={card.picture}
                 alt={`${card.color} card`}
               />
               <CardContent>

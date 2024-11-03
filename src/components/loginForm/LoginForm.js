@@ -26,7 +26,7 @@ function LoginForm() {
     event.preventDefault();
     try {
       const response = await axios.post(
-        'http://localhost:8080/bank/auth/authenticate',
+        'http://localhost:8080/api/auth/authenticate',
         { login, password },
         { headers: { 'X-CSRFToken': csrfToken } }
       );
@@ -39,7 +39,7 @@ function LoginForm() {
 
         switch (role) {
           case USER_ROLES.CLIENT:
-            navigate('/forbidden');
+            navigate(`/profileCl/${id}`);
             break;
           case USER_ROLES.ADMIN:
             navigate(`/reg`);

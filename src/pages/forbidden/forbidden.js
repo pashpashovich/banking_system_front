@@ -13,7 +13,7 @@ const Forbidden = () => {
     const navigate = useNavigate();
 
     const handleLoginRedirect = () => {
-        navigate('/login');
+        navigate('/');
     };
 
     return (

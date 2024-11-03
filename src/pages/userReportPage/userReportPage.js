@@ -57,42 +57,17 @@ const UserReportPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      fetch(`http://localhost:8000/accounts/exact/${userID}/socials`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-      }).then(response => response.json()),
-      fetch(`http://localhost:8000/accounts/exact/${userID}/credit`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-      }).then(response => response.json()),
-      fetch(`http://localhost:8000/accounts/exact/${userID}/savings`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-      }).then(response => response.json()),
-      fetch(`http://localhost:8000/accounts/exact/${userID}/checking`,{
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-      }).then(response => response.json())
-    ])
-      .then(([socialsData, creditData, savingsData, checkingData]) => {
-        const combinedAccounts = [...socialsData, ...creditData, ...savingsData, ...checkingData];
-        setAccounts(combinedAccounts);
-        if (combinedAccounts.length > 0 && !selectedAccount) {
-          setSelectedAccount(combinedAccounts[0].account_num);
-        }
-        setLoading(false);
+    axios.get(`http://localhost:8080/api/accounts/by-user/${userID}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    })
+      .then(response => {
+        setAccounts(response.data);
       })
       .catch(error => {
-        console.error('Error fetching accounts data:', error);
-        setLoading(false);
+        console.error('Error loading account data:', error);
       });
-
     fetch(`${apiUrl}/${userID}/`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -160,7 +135,7 @@ const UserReportPage = () => {
 
   const handleLogout = () => {
     axios.post(
-      'http://localhost:8000/api/logout',
+      'http://localhost:8080/api/auth/logout',
       {
         refresh_token: localStorage.getItem('refreshToken'),
       },
@@ -179,7 +154,7 @@ const UserReportPage = () => {
       }
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      navigate('/login');
+      navigate('/');
     })
     .catch(error => {
       console.error(error);

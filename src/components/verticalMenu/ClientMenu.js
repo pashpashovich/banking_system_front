@@ -12,11 +12,11 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import HomeIcon from '@mui/icons-material/Home';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import logo from "./../../images/logo.png";
-
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 const drawerWidth = 240;
 
 const MenuContainer = styled(Box)({
@@ -27,7 +27,7 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   padding: theme.spacing(2),
-  backgroundColor: '#030E32',
+  backgroundColor: '#24695C',
   color: 'white',
   justifyContent: 'center',
   fontWeight: 'bold',
@@ -35,15 +35,16 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
 
 const StyledDrawer = styled(Drawer)({
   '.MuiDrawer-paper': {
-    backgroundColor: '#030E32',
-    color: 'white',
+    backgroundColor: '#D9D9D9',
+    color: '#24695C',
     width: drawerWidth,
+    fontWeight: 'bold',
   },
 });
 
 const ListItemStyled = styled(ListItem)({
   '&:hover': {
-    backgroundColor: '#3A3A55',
+    backgroundColor: '#b0aeae',
   },
 });
 
@@ -64,21 +65,27 @@ const ClientMenu = ({ userID }) => {
       <List>
         <ListItemStyled button component={Link} to={`/profileCl/${userID}`}>
           <ListItemIcon>
-            <AccountCircleIcon style={{ color: 'white' }} />
+            <AccountCircleIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Профиль" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/clAccs/${userID}`}>
           <ListItemIcon>
-            <HomeIcon style={{ color: 'white' }} />
+            <AccountBalanceIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Счета" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/client/reports/${userID}`}>
           <ListItemIcon>
-            <AssessmentIcon style={{ color: 'white' }} />
+            <CreditCardIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
-          <ListItemText primary="Отчеты" />
+          <ListItemText primary="Карты" />
+        </ListItemStyled>
+        <ListItemStyled button component={Link} to={`/client/reports/${userID}`}>
+          <ListItemIcon>
+            <AssessmentIcon style={{ color: '#24695C' }} />
+          </ListItemIcon>
+          <ListItemText primary="Аналитика" />
         </ListItemStyled>
       </List>
       <Box sx={{ flexGrow: 1 }} />

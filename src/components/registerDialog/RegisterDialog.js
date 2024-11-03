@@ -20,6 +20,9 @@ function RegisterDialog({ open, onClose }) {
     firstName: "",
     secondName: "",
     patronymicName: "",
+    address: "",
+    mobilePhone: "",
+    income: "",
   });
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -32,8 +35,17 @@ function RegisterDialog({ open, onClose }) {
   };
 
   const validateForm = () => {
-    const { login, email, password, firstName, secondName, patronymicName } =
-      formData;
+    const {
+      login,
+      email,
+      password,
+      firstName,
+      secondName,
+      patronymicName,
+      address,
+      mobilePhone,
+      income,
+    } = formData;
 
     if (
       !login ||
@@ -41,7 +53,10 @@ function RegisterDialog({ open, onClose }) {
       !password ||
       !firstName ||
       !secondName ||
-      !patronymicName
+      !patronymicName ||
+      !address ||
+      !mobilePhone ||
+      !income
     ) {
       setErrorMessage("Все поля должны быть заполнены.");
       return false;
@@ -70,7 +85,7 @@ function RegisterDialog({ open, onClose }) {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/bank/auth/signUp",
+        "http://localhost:8080/api/auth/signUp",
         formData
       );
       if (response.status === 200) {
@@ -175,6 +190,34 @@ function RegisterDialog({ open, onClose }) {
           value={formData.patronymicName}
           onChange={handleChange}
         />
+        <TextField
+          label="Адрес"
+          name="address"
+          variant="outlined"
+          fullWidth
+          margin="dense"
+          value={formData.address}
+          onChange={handleChange}
+        />
+        <TextField
+          label="Мобильный телефон"
+          name="mobilePhone"
+          variant="outlined"
+          fullWidth
+          margin="dense"
+          value={formData.mobilePhone}
+          onChange={handleChange}
+        />
+        <TextField
+          label="Доход"
+          name="income"
+          variant="outlined"
+          fullWidth
+          margin="dense"
+          value={formData.income}
+          onChange={handleChange}
+        />
+
         <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
           <Button
             variant="contained"

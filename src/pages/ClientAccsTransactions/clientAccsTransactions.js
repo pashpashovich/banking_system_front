@@ -98,10 +98,10 @@ const AccountTransactionsPage = () => {
   const [selectedCurrency, setSelectedCurrency] = useState("BYN");
   const [transactionCurrency, setTransactionCurrency] = useState("BYN");
   const [newTransactionData, setNewTransactionData] = useState({
-    sender_account: "",
-    recipient_account: "",
+    senderAccountId: "",
+    recipientAccountId: "",
     amount: "",
-    transaction_type: "withdrawal",
+    transactionType: "withdrawal",
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
@@ -113,84 +113,80 @@ const AccountTransactionsPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const apiUrl = "http://localhost:8000/accounts";
+  const apiUrl = "http://localhost:8080/api/accounts";
 
   useEffect(() => {
-    Promise.any([
-      axios
-        .get(`${apiUrl}/${accountID}/socials`, {
+    const fetchAccountInfo = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/${accountID}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
-        })
-        .then((response) => response.data),
-      axios
-        .get(`${apiUrl}/${accountID}/credit`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        })
-        .then((response) => response.data),
-      axios
-        .get(`${apiUrl}/${accountID}/savings`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        })
-        .then((response) => response.data),
-      axios
-        .get(`${apiUrl}/${accountID}/checking`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        })
-        .then((response) => response.data),
-    ])
-      .then((data) => {
-        setAccountInfo(data);
+        });
+        setAccountInfo(response.data);
         fetchConvertedBalance(
-          data.account_balance.toString(),
-          data.currency,
+          response.data.accountBalance.toString(),
+          response.data.currency,
           selectedCurrency
         );
-      })
-      .catch((error) => handleRequestError(error, navigate));
+      } catch (error) {
+        handleRequestError(error, navigate);
+      }
+    };
 
-    fetch(`http://localhost:8000/transactions/${accountID}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => setTransactions(data))
-      .catch((error) => handleRequestError(error, navigate));
+    const fetchTransactions = async () => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/${accountID}/transactions`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        );
+        setTransactions(response.data);
+      } catch (error) {
+        handleRequestError(error, navigate);
+      }
+    };
 
-    fetch(`http://localhost:8000/clients/${userID}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setAvatarUrl(data.user.avatar);
-      })
-      .catch((error) => handleRequestError(error, navigate));
+    const fetchClientInfo = async () => {
+      if (userID) {
+        axios
+          .get(`http://localhost:8080/api/users/${userID}/avatar`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          })
+          .then((response) => {
+            if (response.data) {
+              setAvatarUrl(`data:image/jpeg;base64,${response.data}`);
+            }
+          })
+          .catch((error) => {
+            console.error("Ошибка загрузки аватара:", error);
+          });
+      }
+    };
+
+    fetchAccountInfo();
+    fetchTransactions();
+    fetchClientInfo();
   }, [accountID, selectedCurrency, userID, navigate]);
 
   const fetchConvertedBalance = async (balance, fromCurrency, toCurrency) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8000/accounts/convert/${balance}/${fromCurrency}/${toCurrency}/`,
+    axios
+      .get(
+        `http://localhost:8080/api/accounts/convert/${balance}/${fromCurrency}/${toCurrency}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         }
-      );
-      setConvertedBalance(response.data[toCurrency]);
-    } catch (error) {
-      handleRequestError(error, navigate);
-    }
+      )
+      .then((response) => {
+        setConvertedBalance(response.data[toCurrency]);
+      });
   };
 
   const handleCurrencyChange = (event) => {
@@ -198,7 +194,7 @@ const AccountTransactionsPage = () => {
     setSelectedCurrency(newCurrency);
     if (accountInfo) {
       fetchConvertedBalance(
-        accountInfo.account_balance,
+        accountInfo.accountBalance.toString(),
         accountInfo.currency,
         newCurrency
       );
@@ -219,38 +215,41 @@ const AccountTransactionsPage = () => {
   };
 
   const handleAddTransaction = async () => {
-    const { amount, transaction_type, recipient_account } = newTransactionData;
+    const { amount, transactionType, recipientAccountId } = newTransactionData;
     const transactionData = {
-      sender_account: accountID,
-      recipient_account: "",
+      senderAccountId: accountID,
+      recipientAccountId: "",
       amount: amount,
-      transaction_type: transaction_type,
+      transactionType: newTransactionData.transactionType.toUpperCase(),
       currency: transactionCurrency,
+      transactionTime: new Date().toISOString(),
     };
-    if (transaction_type === "transfer") {
-      transactionData.recipient_account = recipient_account;
+    if (transactionType === "TRANSFER") {
+      transactionData.recipientAccountId = recipientAccountId;
     }
-
     try {
       const response = await axios.post(
-        "http://localhost:8000/transactions/",
+        "http://localhost:8080/api/transactions/",
         transactionData,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
+          withCredentials: true,
         }
       );
       setTransactions([...transactions, response.data]);
       setNewTransactionData({
-        sender_account: "",
-        recipient_account: "",
+        senderAccountId: "",
+        recipientAccountId: "",
         amount: "",
-        transaction_type: "withdrawal",
+        transactionType: "withdrawal",
         currency: "BYN",
+        transactionTime: ""
       });
-      await generateReceipt(response.data.id);
-      window.location.reload();
+      console.log(response.data.id)
+       await generateReceipt(response.data.id);
+        window.location.reload();
     } catch (error) {
       if (error.response && error.response.status === 400) {
         setBalanceError("Недостаточно средств для выполнения операции.");
@@ -263,19 +262,23 @@ const AccountTransactionsPage = () => {
   const generateReceipt = async (transactionId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/transactions/receipt/${transactionId}/`,
+        `http://localhost:8080/api/transactions/receipt/${transactionId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
+          responseType: 'blob',  
         }
       );
+    
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", `receipt_${transactionId}.pdf`);
       document.body.appendChild(link);
       link.click();
+            link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       handleRequestError(error, navigate);
     }
@@ -316,25 +319,32 @@ const AccountTransactionsPage = () => {
   };
 
   const handleLogout = () => {
-    axios
-      .post(
-        "http://localhost:8000/api/logout",
-        {
-          refresh_token: localStorage.getItem("refreshToken"),
+    axios.post(
+      'http://localhost:8080/api/auth/logout',
+      {
+        refresh_token: localStorage.getItem('refreshToken'),
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      )
-      .then((response) => {
-        if (response.status !== 200) return;
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        navigate("/login");
-      })
-      .catch((error) => handleRequestError(error, navigate));
+        withCredentials: true
+      }
+    )
+    .then(response => {
+      if (response.status !== 200) {
+        console.log(localStorage.getItem('refreshToken'));
+        return;
+      }
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      navigate('/');
+    })
+    .catch(error => {
+      console.error(error);
+      console.log(localStorage.getItem('refreshToken'));
+    });
   };
 
   const handleSearchChange = (event) => {
@@ -348,9 +358,9 @@ const AccountTransactionsPage = () => {
 
   const filteredTransactions = transactions.filter((transaction) => {
     return (
-      transaction.transaction_type.includes(filters.transactionType) &&
+      transaction.transactionType.includes(filters.transactionType) &&
       transaction.currency.includes(filters.currency) &&
-      (transaction.transaction_type.includes(searchQuery) ||
+      (transaction.transactionType.includes(searchQuery) ||
         transaction.amount.toString().includes(searchQuery))
     );
   });
@@ -363,7 +373,7 @@ const AccountTransactionsPage = () => {
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          background: "#030E32",
+          background: "#24695C",
         }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -412,20 +422,20 @@ const AccountTransactionsPage = () => {
                   Информация о счете {accountID}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  Номер счета: {accountInfo.account_num}
+                  Номер счета: {accountInfo.accountNum}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  Тип счета: {accountInfo.account_type}
+                  Тип счета: {accountInfo.accountType}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
                   Баланс:{" "}
                   {convertedBalance
                     ? convertedBalance.toFixed(2)
-                    : accountInfo.account_balance}{" "}
+                    : accountInfo.accountBalance}{" "}
                   {selectedCurrency}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  Дата открытия: {accountInfo.open_date}
+                  Дата открытия: {accountInfo.openDate}
                 </Typography>
                 {renderAdditionalAccountInfo()}
                 <Divider sx={{ marginY: 3 }} />
@@ -440,20 +450,20 @@ const AccountTransactionsPage = () => {
                   <FormControl variant="outlined" margin="normal" fullWidth>
                     <InputLabel>Тип транзакции</InputLabel>
                     <Select
-                      name="transaction_type"
-                      value={newTransactionData.transaction_type}
+                      name="transactionType"
+                      value={newTransactionData.transactionType}
                       onChange={handleInputChange}
                       label="Тип транзакции"
                     >
-                      <MenuItem value="withdrawal">Снятие</MenuItem>
-                      <MenuItem value="transfer">Перевод</MenuItem>
+                      <MenuItem value="WITHDRAWAL">Снятие</MenuItem>
+                      <MenuItem value="TRANSFER">Перевод</MenuItem>
                     </Select>
                   </FormControl>
-                  {newTransactionData.transaction_type === "transfer" && (
+                  {newTransactionData.transactionType === "TRANSFER" && (
                     <TextField
                       label="Номер счета получателя"
-                      name="recipient_account"
-                      value={newTransactionData.recipient_account}
+                      name="recipientAccountId"
+                      value={newTransactionData.recipientAccountId}
                       onChange={handleInputChange}
                       variant="outlined"
                       margin="normal"
@@ -536,9 +546,9 @@ const AccountTransactionsPage = () => {
                   label="Тип транзакции"
                 >
                   <MenuItem value="">Все</MenuItem>
-                  <MenuItem value="withdrawal">Снятие</MenuItem>
-                  <MenuItem value="transfer">Перевод</MenuItem>
-                  <MenuItem value="deposit">Депозит</MenuItem>
+                  <MenuItem value="WITHDRAWAL">Снятие</MenuItem>
+                  <MenuItem value="TRANSFER">Перевод</MenuItem>
+                  <MenuItem value="DEPOSIT">Депозит</MenuItem>
                 </Select>
               </FormControl>
               <FormControl variant="outlined" sx={{ minWidth: 120 }}>
@@ -573,12 +583,12 @@ const AccountTransactionsPage = () => {
                   {filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>
-                        {new Date(transaction.transaction_time).toLocaleString(
+                        {new Date(transaction.transactionTime).toLocaleString(
                           "ru-BY",
                           { timeZone: "Europe/Minsk" }
                         )}
                       </TableCell>
-                      <TableCell>{transaction.transaction_type}</TableCell>
+                      <TableCell>{transaction.transactionType}</TableCell>
                       <TableCell>{transaction.amount}</TableCell>
                       <TableCell>{transaction.currency}</TableCell>
                       <TableCell>

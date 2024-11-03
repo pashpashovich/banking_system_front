@@ -4,7 +4,7 @@ import { Typography, List, ListItem, ListItemText, Button, ListItemSecondaryActi
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import { styled } from '@mui/material/styles';
-import ClientMenu from '../../components/verticalMenu/ClientMenu';
+import ClientMenu from "../../components/verticalMenu/ClientMenu";
 import axios from 'axios';
 
 const drawerWidth = 240;
@@ -46,49 +46,16 @@ const ClientAccsPage = () => {
   };
 
   useEffect(() => {
-    fetch(`http://localhost:8000/clients/${userID}`, {
+    axios.get(`http://localhost:8080/api/accounts/by-user/${userID}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
       },
     })
       .then(response => {
-        if (!response.ok) {
-          if (response.status === 403) {
-            navigate('/forbidden');
-          } else if (response.status === 401) {
-            navigate('/login');
-          }
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
+        setAccounts(response.data);
       })
-      .then(data => setClientInfo(data))
-      .catch(error => console.error(error));
-
-    Promise.all([
-      fetch(`http://localhost:8000/accounts/exact/${userID}/socials`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      }).then(response => response.json()),
-      fetch(`http://localhost:8000/accounts/exact/${userID}/credit`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      }).then(response => response.json()),
-      fetch(`http://localhost:8000/accounts/exact/${userID}/savings`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      }).then(response => response.json()),
-      fetch(`http://localhost:8000/accounts/exact/${userID}/checking`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      }).then(response => response.json())
-    ])
-      .then(([socialsData, creditData, savingsData, checkingData]) => {
-        setAccounts([...socialsData, ...creditData, ...savingsData, ...checkingData]);
+      .catch(error => {
+        console.error('Error loading account data:', error);
       });
   }, [userID, navigate]);
 
@@ -98,7 +65,7 @@ const ClientAccsPage = () => {
 
   const handleLogout = () => {
     axios.post(
-      'http://localhost:8000/api/logout',
+      'http://localhost:8080/api/auth/logout',
       {
         refresh_token: localStorage.getItem('refreshToken'),
       },
@@ -117,7 +84,7 @@ const ClientAccsPage = () => {
       }
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      navigate('/login');
+      navigate('/');
     })
     .catch(error => {
       console.error(error);
@@ -129,7 +96,7 @@ const ClientAccsPage = () => {
     <MenuContainer>
       <CssBaseline />
       <ClientMenu userID={userID} />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: '#030E32' }}>
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: '#24695C' }}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography variant="h6" noWrap component="div">
             Счета
@@ -152,40 +119,19 @@ const ClientAccsPage = () => {
         <Toolbar />
         <ContentContainer>
           <StyledPaper elevation={3}>
-            {clientInfo && (
-              <Box sx={{ marginBottom: 2, textAlign: 'center' }}>
-                <Avatar
-                  alt={clientInfo.first_name}
-                  src={clientInfo.user.avatar || "/static/images/avatar/1.jpg"}
-                  sx={{ width: 120, height: 120, margin: '0 auto', marginBottom: 2 }}
-                />
-                <Typography variant="h5" gutterBottom>
-                  {clientInfo.first_name} {clientInfo.last_name}
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  Email: {clientInfo.user.email}
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  Телефон: {clientInfo.phone_number}
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  Адрес: {clientInfo.address}
-                </Typography>
-              </Box>
-            )}
             <Typography variant="h5" gutterBottom style={{ textAlign: 'center' }}>
               Счета клиента
             </Typography>
             <List>
-              {Array.isArray(accounts) && accounts.map(account => (
-                <Box key={account.account_num}>
+              {accounts.map(account => (
+                <Box key={account.accountNum}>
                   <ListItem>
                     <ListItemText
-                      primary={account.account_type}
-                      secondary={`Баланс: ${account.account_balance} ${account.currency}`}
+                      primary={account.accountType || 'Неизвестный тип'}
+                      secondary={`Баланс: ${account.accountBalance} ${account.currency}`}
                     />
                     <ListItemSecondaryAction>
-                      <Button onClick={() => handleDetailsClick(account.account_num)}>Подробнее</Button>
+                      <Button onClick={() => handleDetailsClick(account.accountNum)}>Подробнее</Button>
                     </ListItemSecondaryAction>
                   </ListItem>
                   <Divider />

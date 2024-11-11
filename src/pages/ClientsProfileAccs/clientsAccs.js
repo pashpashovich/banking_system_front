@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Typography, List, ListItem, ListItemText, Button, ListItemSecondaryAction, Divider, Paper, Box, AppBar, Toolbar, CssBaseline, Drawer, Avatar, IconButton, Hidden } from '@mui/material';
+import { Typography, List, ListItem, ListItemText, Button, ListItemSecondaryAction, Divider, Paper, Box, AppBar, Toolbar, CssBaseline, Avatar, IconButton } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import MenuIcon from '@mui/icons-material/Menu';
 import { styled } from '@mui/material/styles';
 import ClientMenu from "../../components/verticalMenu/ClientMenu";
 import axios from 'axios';
@@ -24,15 +23,42 @@ const ContentContainer = styled(Box)({
 });
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(3),
   width: '100%',
   maxWidth: 800,
-  color: 'black',
+  color: theme.palette.text.primary,
   borderRadius: '8px',
+  boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+  backgroundColor: '#f4f6f8',
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1),
+    padding: theme.spacing(2),
   },
 }));
+
+const StyledListItem = styled(ListItem)(({ theme }) => ({
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
+}));
+
+const DetailsButton = styled(Button)(({ theme }) => ({
+  color: '#24695C',
+  backgroundColor: '#E0F2F1',
+  '&:hover': {
+    backgroundColor: '#B2DFDB',
+  },
+  borderRadius: '20px',
+  textTransform: 'none',
+}));
+
+const AppBarStyled = styled(AppBar)({
+  background: '#24695C',
+});
+
+const TitleTypography = styled(Typography)({
+  color: 'white',
+  fontWeight: 'bold',
+});
 
 const ClientAccsPage = () => {
   const { userID } = useParams();
@@ -96,11 +122,11 @@ const ClientAccsPage = () => {
     <MenuContainer>
       <CssBaseline />
       <ClientMenu userID={userID} />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: '#24695C' }}>
+      <AppBarStyled position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="h6" noWrap component="div">
+          <TitleTypography variant="h6" noWrap component="div">
             Счета
-          </Typography>
+          </TitleTypography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             {clientInfo && (
               <Avatar
@@ -114,26 +140,32 @@ const ClientAccsPage = () => {
             </IconButton>
           </Box>
         </Toolbar>
-      </AppBar>
+      </AppBarStyled>
       <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
         <Toolbar />
         <ContentContainer>
           <StyledPaper elevation={3}>
-            <Typography variant="h5" gutterBottom style={{ textAlign: 'center' }}>
+            <Typography variant="h5" gutterBottom style={{ textAlign: 'center', color: '#24695C', fontWeight: 'bold' }}>
               Счета клиента
             </Typography>
             <List>
               {accounts.map(account => (
                 <Box key={account.accountNum}>
-                  <ListItem>
+                  <StyledListItem>
                     <ListItemText
-                      primary={account.accountType || 'Неизвестный тип'}
-                      secondary={`Баланс: ${account.accountBalance} ${account.currency}`}
+                      primary={<Typography variant="h6" style={{ color: '#333' }}>{account.accountType || 'Неизвестный тип'}</Typography>}
+                      secondary={
+                        <Typography variant="body2" style={{ color: '#666' }}>
+                          Баланс: {account.accountBalance} {account.currency}
+                        </Typography>
+                      }
                     />
                     <ListItemSecondaryAction>
-                      <Button onClick={() => handleDetailsClick(account.accountNum)}>Подробнее</Button>
+                      <DetailsButton variant="contained" onClick={() => handleDetailsClick(account.accountNum)}>
+                        Подробнее
+                      </DetailsButton>
                     </ListItemSecondaryAction>
-                  </ListItem>
+                  </StyledListItem>
                   <Divider />
                 </Box>
               ))}

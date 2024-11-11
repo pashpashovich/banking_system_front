@@ -42,7 +42,7 @@ function LoginForm() {
             navigate(`/profileCl/${id}`);
             break;
           case USER_ROLES.ADMIN:
-            navigate(`/reg`);
+            navigate(`/profile/${id}`);
             break;
           default:
             setErrorMessage('Неизвестная роль пользователя');
@@ -52,6 +52,8 @@ function LoginForm() {
       }
     } catch (error) {
       if (error.response) {
+        console.log("Response Data:", error.response.data);
+        console.log("Response Status:", error.response.status);
         if (error.response.status === 403) {
           setErrorMessage('Ваш аккаунт деактивирован. Пожалуйста, свяжитесь с поддержкой.');
         } else if (error.response.status === 401) {

@@ -27,7 +27,7 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   padding: theme.spacing(2),
-  backgroundColor: '#24695C',
+  backgroundColor: '#030E32',
   color: 'white',
   justifyContent: 'center',
   fontWeight: 'bold',

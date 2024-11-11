@@ -15,7 +15,7 @@ const groupTransactionsByDate = (transactions) => {
     const counts = {};
 
     transactions.forEach(transaction => {
-        const date = transaction.transaction_time.split('T')[0]; 
+        const date = transaction.transactionTime.split('T')[0]; 
         if (!counts[date]) {
             counts[date] = 0;
         }
@@ -73,7 +73,7 @@ const TransactionsByDateChart = ({ transactions, startDate, endDate, setStartDat
 
     const handleFilter = () => {
         const filtered = transactions.filter(transaction => {
-            const date = transaction.transaction_time.split('T')[0];
+            const date = transaction.transactionTime.split('T')[0];
             return date >= startDate && date <= endDate;
         });
         setFilteredTransactions(filtered);

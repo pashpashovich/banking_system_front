@@ -10,7 +10,8 @@ import axios from "axios";
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const apiUrl = 'http://localhost:8000/clients';
-const pdfUrl = 'http://localhost:8000/transactions/generate-pdf-client/';
+const pdfUrl = 'http://localhost:8080/api/transactions/report/';
+const userUrl = 'http://localhost:8080/api/users';
 
 const MenuContainer = styled(Box)({
   display: 'flex',
@@ -40,10 +41,21 @@ const HeaderAvatar = styled(Avatar)({
   height: 40,
 });
 
+const DetailsButton = styled(Button)(({ theme }) => ({
+  color: '#24695C',
+  backgroundColor: '#E0F2F1',
+  '&:hover': {
+    backgroundColor: '#B2DFDB',
+  },
+  borderRadius: '20px',
+  textTransform: 'none',
+}));
+
 const UserReportPage = () => {
   const { userID } = useParams();
   const [data, setData] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [avatarUrl, setAvatarUrl] = useState(null);
   const [dailyTransactions, setDailyTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -57,6 +69,35 @@ const UserReportPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
+    axios.get(`${userUrl}/${userID}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    })
+      .then(response => {
+        setUserData(response.data);
+      })
+      .catch(error => {
+        console.error('Error loading user data:', error);
+      });
+
+      axios
+      .get(`http://localhost:8080/api/users/${userID}/avatar`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      })
+      .then((response) => {
+        if (response.data) {
+          setAvatarUrl(`data:image/jpeg;base64,${response.data}`);
+        }
+      })
+      .catch((error) => {
+        console.error("Ошибка загрузки аватара:", error);
+      });
+  }, [userID]);
+
+  useEffect(() => {
     axios.get(`http://localhost:8080/api/accounts/by-user/${userID}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -67,28 +108,6 @@ const UserReportPage = () => {
       })
       .catch(error => {
         console.error('Error loading account data:', error);
-      });
-    fetch(`${apiUrl}/${userID}/`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-      },
-    })
-      .then(response => {
-        if (!response.ok) {
-          if (response.status === 403) {
-            navigate('/forbidden');
-          } else if (response.status === 401) {
-            navigate('/login');
-          }
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        setUserData(data);
-      })
-      .catch(error => {
-        console.error('Error fetching user data:', error);
       });
   }, [userID, selectedAccount, navigate]);
 
@@ -101,16 +120,12 @@ const UserReportPage = () => {
 
   const fetchTransactionData = async (account, month) => {
     try {
-      const response = await fetch(`http://localhost:8000/transactions/${account}/${month}/daily`,{
+      const response = await axios.get(`http://localhost:8080/api/transactions/${account}/${month}/daily`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
         },
       });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setDailyTransactions(data);
+      setDailyTransactions(response.data);
     } catch (error) {
       console.error('Error refreshing transaction data:', error);
     }
@@ -118,16 +133,12 @@ const UserReportPage = () => {
 
   const fetchTransactionStats = async (account, month) => {
     try {
-      const response = await fetch(`http://localhost:8000/transactions/${account}/${month}/stats`,{
+      const response = await axios.get(`http://localhost:8080/api/transactions/${account}/${month}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
         },
       });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setData(data);
+      setData(response.data);
     } catch (error) {
       console.error('Error refreshing transaction data:', error);
     }
@@ -142,23 +153,18 @@ const UserReportPage = () => {
       {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
-        withCredentials: true
+        withCredentials: true,
       }
     )
     .then(response => {
-      if (response.status !== 200) {
-        console.log(localStorage.getItem('refreshToken'));
-        return;
-      }
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       navigate('/');
     })
     .catch(error => {
       console.error(error);
-      console.log(localStorage.getItem('refreshToken'));
     });
   };
 
@@ -173,36 +179,25 @@ const UserReportPage = () => {
     }
 
     setDownloading(true);
-    const params = new URLSearchParams({
-      account: selectedAccount,
-      month: selectedMonth,
-    }).toString();
-
-    fetch(`${pdfUrl}?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+    axios.get(`${pdfUrl}${selectedAccount}/${selectedMonth}`, {
+            headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
       },
+      responseType: 'blob',
     })
-      .then((response) => response.blob())
-      .then((blob) => {
-        const url = window.URL.createObjectURL(new Blob([blob]));
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement("a");
         link.href = url;
         link.setAttribute("download", "user_report.pdf");
         document.body.appendChild(link);
         link.click();
-        link.parentNode.removeChild(link);
+              link.remove();
+        window.URL.revokeObjectURL(url);
       })
       .catch((error) => console.error("Error downloading PDF:", error))
       .finally(() => setDownloading(false));
   };
-
-  if (!userData) {
-    return <CircularProgress />;
-  }
-
-  const { user, first_name} = userData;
-  const { avatar: avatarUrl } = user;
 
   const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const selectedMonthName = monthNames[selectedMonth - 1];
@@ -213,8 +208,7 @@ const UserReportPage = () => {
     if (selectedMonth === today.getMonth() + 1) {
       return today.getDate();
     }
-    const lastDay = new Date(year, selectedMonth, 0).getDate();
-    return lastDay;
+    return new Date(year, selectedMonth, 0).getDate();
   };
 
   const displayDate = getCurrentDateOrEndOfMonth(selectedMonth);
@@ -223,13 +217,13 @@ const UserReportPage = () => {
     <MenuContainer>
       <CssBaseline />
       <ClientMenu userID={userID} />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: '#030E32' }}>
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: '#24695C' }}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography variant="h6" noWrap component="div">
             Отчетность
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <HeaderAvatar alt={first_name} src={avatarUrl || "/static/images/avatar/1.jpg"} />
+            <HeaderAvatar alt={userData?.first_name} src={avatarUrl || "/static/images/avatar/1.jpg"} />
             <IconButton onClick={handleLogout}>
               <LogoutIcon style={{ color: 'white' }} />
             </IconButton>
@@ -239,7 +233,7 @@ const UserReportPage = () => {
       <ContentContainer>
         <Toolbar />
         <Paper elevation={3} sx={{ padding: 2, width: '100%', mt: 3 }}>
-          {loading ? (
+          {!loading ? (
             <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
               <CircularProgress />
             </Box>
@@ -252,8 +246,8 @@ const UserReportPage = () => {
                   onChange={e => setSelectedAccount(e.target.value)}
                 >
                   {accounts.map(account => (
-                    <MenuItem key={account.account_num} value={account.account_num}>
-                      {account.account_num}
+                    <MenuItem key={account.accountNum} value={account.accountNum}>
+                      {account.accountNum}
                     </MenuItem>
                   ))}
                 </Select>
@@ -264,24 +258,20 @@ const UserReportPage = () => {
                   value={selectedMonth}
                   onChange={e => setSelectedMonth(e.target.value)}
                 >
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <MenuItem key={i} value={i + 1}>
-                      {`${monthNames[i]}`}
+                  {monthNames.map((month, index) => (
+                    <MenuItem key={index + 1} value={index + 1}>
+                      {month}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-              <DailyTransactionsChart data={dailyTransactions} />
               <TransactionStats data={data} selectedMonthName={selectedMonthName} displayDate={displayDate} />
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                <Button variant="contained" color="primary" onClick={downloadPDF} disabled={downloading}>
-                  {downloading ? "Загрузка..." : "Скачать отчет в PDF"}
-                </Button>
-              </Box>
+              <DailyTransactionsChart data={dailyTransactions} days={displayDate} />
+              <DetailsButton variant="contained" color="primary" onClick={downloadPDF} disabled={downloading} sx={{ mt: 3 }}>
+                {downloading ? "Скачивание..." : "Скачать отчет PDF"}
+              </DetailsButton>
               {errorMessage && (
-                <Typography color="error" sx={{ mt: 2 }}>
-                  {errorMessage}
-                </Typography>
+                <Typography color="error" sx={{ mt: 1 }}>{errorMessage}</Typography>
               )}
             </>
           )}

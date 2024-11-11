@@ -5,14 +5,14 @@ import {useEffect} from "react";
 
 const countAccountTypes = (accounts) => {
     const counts = {
-        'CheckingAccount': 0,
-        'SavingsAccount': 0,
-        'CreditAccount': 0,
-        'SocialAccount': 0
+        'CHECKING': 0,
+        'SAVINGS': 0,
+        'CREDIT': 0,
+        'SOCIAL': 0
     };
 
     accounts.forEach(account => {
-        counts[account.account_type] += 1;
+        counts[account.accountType] += 1;
     });
 
     return Object.values(counts);

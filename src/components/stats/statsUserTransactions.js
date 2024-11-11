@@ -1,82 +1,127 @@
 import React from 'react';
-import { Box, Typography, Paper, LinearProgress, Grid } from '@mui/material';
+import { Box, Typography, Paper, LinearProgress, Grid, CircularProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(3),
   width: '100%',
+  borderRadius: theme.shape.borderRadius * 2,
+  boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
   marginTop: theme.spacing(3),
+  backgroundColor: '#f4f6f8',
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   fontWeight: 'bold',
+  color: '#24695C',
 }));
 
 const StatBox = styled(Box)(({ theme }) => ({
   display: 'flex',
-  justifyContent: 'space-between',
   alignItems: 'center',
+  padding: theme.spacing(1),
   marginBottom: theme.spacing(1),
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: theme.palette.grey[100],
+  justifyContent: 'space-between',
 }));
 
 const ProgressBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(1),
+  gap: theme.spacing(2),
 }));
 
 const HighlightedText = styled(Typography)(({ theme }) => ({
-  color: theme.palette.primary.main,
+  color: '#1C7947',
   fontWeight: 'bold',
 }));
 
 const TransactionStats = ({ data, selectedMonthName, displayDate }) => {
   if (!data) {
-    return <div>Хмммммм</div>;
+    return <Typography>Загрузка данных...</Typography>;
   }
+
+  const calculateCircleValue = (value) => Math.min(100, value);
 
   return (
     <StyledPaper elevation={3}>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" align="center" gutterBottom style={{ color: '#24695C', fontWeight: 'bold' }}>
         Ваш отчет за {selectedMonthName} 2024
       </Typography>
-      <Typography variant="subtitle1">
-        Ваши транзакции по {displayDate} {selectedMonthName} 2024
+      <Typography variant="subtitle1" align="center" gutterBottom>
+        Транзакции за {displayDate} {selectedMonthName} 2024
       </Typography>
-      
-      <SectionTitle variant="h6">Общая сумма</SectionTitle>
+
+      <SectionTitle variant="h6">Общая сумма транзакций</SectionTitle>
       <ProgressBox>
         <StatBox>
           <Typography>Списания</Typography>
-          <HighlightedText>{data.total_withdrawals.toFixed(2)} BYN</HighlightedText>
+          <HighlightedText>{data.totalWithdrawals.toFixed(2)} BYN</HighlightedText>
         </StatBox>
-        <LinearProgress variant="determinate" value={(data.total_withdrawals / (data.total_withdrawals + data.total_deposits)) * 100} />
+        <LinearProgress
+          variant="determinate"
+          value={(data.totalWithdrawals / (data.totalWithdrawals + data.totalDeposits)) * 100}
+          sx={{ borderRadius: 1, backgroundColor: '#A9D4AC', '& .MuiLinearProgress-bar': { backgroundColor: '#1C7947' } }}
+        />
         <StatBox>
           <Typography>Зачисления</Typography>
-          <HighlightedText>{data.total_deposits.toFixed(2)} BYN</HighlightedText>
+          <HighlightedText>{data.totalDeposits.toFixed(2)} BYN</HighlightedText>
         </StatBox>
-        <LinearProgress variant="determinate" color="secondary" value={(data.total_deposits / (data.total_withdrawals + data.total_deposits)) * 100} />
+        <LinearProgress
+          variant="determinate"
+          color="secondary"
+          value={(data.totalDeposits / (data.totalWithdrawals + data.totalDeposits)) * 100}
+          sx={{ borderRadius: 1, backgroundColor: '#A9D4AC', '& .MuiLinearProgress-bar': { backgroundColor: '#4CAF50' } }}
+        />
       </ProgressBox>
 
       <SectionTitle variant="h6">Статистика операций</SectionTitle>
       <Grid container spacing={2}>
         <Grid item xs={4}>
           <StatBox>
-            <Typography>Максимальная операция</Typography>
-            <HighlightedText>{data.max_transaction.toFixed(2)} BYN</HighlightedText>
+            <Box display="flex" alignItems="center" gap={1}>
+              <CircularProgress
+                variant="determinate"
+                value={calculateCircleValue(data.maxTransaction)}
+                size={60}
+                thickness={5}
+                sx={{ color: '#1C7947' }}
+              />
+              <Typography>Макс. операция</Typography>
+            </Box>
+            <HighlightedText>{data.maxTransaction.toFixed(2)} BYN</HighlightedText>
           </StatBox>
         </Grid>
         <Grid item xs={4}>
           <StatBox>
-            <Typography>Минимальная операция</Typography>
-            <HighlightedText>{data.min_transaction.toFixed(2)} BYN</HighlightedText>
+            <Box display="flex" alignItems="center" gap={1}>
+              <CircularProgress
+                variant="determinate"
+                value={calculateCircleValue(data.minTransaction)}
+                size={60}
+                thickness={5}
+                sx={{ color: '#66BB6A' }}
+              />
+              <Typography>Мин. операция</Typography>
+            </Box>
+            <HighlightedText>{data.minTransaction.toFixed(2)} BYN</HighlightedText>
           </StatBox>
         </Grid>
         <Grid item xs={4}>
           <StatBox>
-            <Typography>Средняя операция</Typography>
-            <HighlightedText>{data.avg_transaction.toFixed(2)} BYN</HighlightedText>
+            <Box display="flex" alignItems="center" gap={1}>
+              <CircularProgress
+                variant="determinate"
+                value={calculateCircleValue(data.avgTransaction)}
+                size={60}
+                thickness={5}
+                sx={{ color: '#4CAF50' }}
+              />
+              <Typography>Средн. операция</Typography>
+            </Box>
+            <HighlightedText>{data.avgTransaction.toFixed(2)} BYN</HighlightedText>
           </StatBox>
         </Grid>
       </Grid>

@@ -31,7 +31,6 @@ function App() {
             <Routes>
                 <Route path="/" element={<MainPage/>}></Route>
                 <Route path="/reg" element={<RegisterPage/>}></Route>
-                <Route path="/login" element={<LoginPage/>}></Route>
                 <Route path="/profile/:userID" element={<ProfilePage/> }></Route>
                 <Route path="/profileDir/:userID" element={<DirectorProfilePage/> }></Route>
                 <Route path="/profileCl/:userID" element={<ClientProfilePage/> }></Route>

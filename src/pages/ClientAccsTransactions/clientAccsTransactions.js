@@ -23,7 +23,6 @@ import {
   AppBar,
   Toolbar,
   Avatar,
-  Drawer,
   useMediaQuery,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -38,13 +37,14 @@ axios.defaults.withCredentials = true;
 const drawerWidth = 240;
 
 const FormContainer = styled(Paper)({
-  padding: 20,
+  padding: 24,
   maxWidth: 800,
-  margin: "auto",
-  marginTop: 20,
+  margin: "20px auto",
   color: "black",
+  borderRadius: 12,
+  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
   "@media (max-width: 600px)": {
-    padding: 10,
+    padding: 16,
     marginTop: 10,
   },
 });
@@ -60,21 +60,39 @@ const MenuContainer = styled(Box)({
 
 const ContentContainer = styled(Box)({
   flexGrow: 1,
-  p: 3,
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   width: "100%",
   maxWidth: 800,
   margin: "0 auto",
+  padding: "20px",
   boxSizing: "border-box",
 });
 
 const CustomButton = styled(Button)({
-  background: "#6a65ff",
+  background: "#24695C",
+  color: "#FFFFFF",
   ":hover": {
-    background: "#5a55e0",
+    background: "#1E5B4E",
   },
+  borderRadius: "20px",
+  textTransform: "none",
+});
+
+const SearchContainer = styled(Box)({
+  display: "flex",
+  justifyContent: "space-between",
+  marginBottom: 16,
+});
+
+const AppBarStyled = styled(AppBar)({
+  background: "#24695C",
+});
+
+const TitleTypography = styled(Typography)({
+  color: "white",
+  fontWeight: "bold",
 });
 
 const handleRequestError = (error, navigate) => {
@@ -222,8 +240,12 @@ const AccountTransactionsPage = () => {
       amount: amount,
       transactionType: newTransactionData.transactionType.toUpperCase(),
       currency: transactionCurrency,
-      transactionTime: new Date().toISOString(),
-    };
+      transactionTime: (() => {
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() + 3);
+        return currentDate.toISOString();
+    })(),
+      };
     if (transactionType === "TRANSFER") {
       transactionData.recipientAccountId = recipientAccountId;
     }
@@ -247,9 +269,9 @@ const AccountTransactionsPage = () => {
         currency: "BYN",
         transactionTime: ""
       });
-      console.log(response.data.id)
+      console.log(response.data.transactionTime)
        await generateReceipt(response.data.id);
-        window.location.reload();
+      window.location.reload();
     } catch (error) {
       if (error.response && error.response.status === 400) {
         setBalanceError("Недостаточно средств для выполнения операции.");
@@ -369,20 +391,14 @@ const AccountTransactionsPage = () => {
     <MenuContainer>
       <CssBaseline />
       <ClientMenu userID={userID} />
-      <AppBar
-        position="fixed"
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          background: "#24695C",
-        }}
-      >
+      <AppBarStyled position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="h6" noWrap component="div">
+          <TitleTypography variant="h6" noWrap component="div">
             Транзакции
-          </Typography>
+          </TitleTypography>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <HeaderAvatar
-              alt={"Ooo"}
+              alt="Avatar"
               src={avatarUrl || "/static/images/avatar/1.jpg"}
             />
             <IconButton onClick={handleLogout}>
@@ -390,7 +406,7 @@ const AccountTransactionsPage = () => {
             </IconButton>
           </Box>
         </Toolbar>
-      </AppBar>
+      </AppBarStyled>
       <Box
         component="main"
         sx={{
@@ -402,23 +418,17 @@ const AccountTransactionsPage = () => {
         <Toolbar />
         <ContentContainer>
           <FormContainer elevation={3}>
-            <Box
-              sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}
-            >
-              <IconButton onClick={handleBack} sx={{ color: "#6a65ff" }}>
+            <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
+              <IconButton onClick={handleBack} sx={{ color: "#24695C" }}>
                 <ArrowBackIcon />
               </IconButton>
-              <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              <Typography variant="h6" sx={{ flexGrow: 1, color: "#24695C", fontWeight: "bold" }}>
                 Назад
               </Typography>
             </Box>
             {accountInfo && (
               <Box marginBottom={3}>
-                <Typography
-                  variant="h5"
-                  gutterBottom
-                  style={{ textAlign: "center" }}
-                >
+                <Typography variant="h5" gutterBottom align="center" style={{ color: "#24695C", fontWeight: "bold" }}>
                   Информация о счете {accountID}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
@@ -428,11 +438,7 @@ const AccountTransactionsPage = () => {
                   Тип счета: {accountInfo.accountType}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  Баланс:{" "}
-                  {convertedBalance
-                    ? convertedBalance.toFixed(2)
-                    : accountInfo.accountBalance}{" "}
-                  {selectedCurrency}
+                  Баланс: {convertedBalance ? convertedBalance.toFixed(2) : accountInfo.accountBalance} {selectedCurrency}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
                   Дата открытия: {accountInfo.openDate}
@@ -440,11 +446,7 @@ const AccountTransactionsPage = () => {
                 {renderAdditionalAccountInfo()}
                 <Divider sx={{ marginY: 3 }} />
                 <Box marginTop={3}>
-                  <Typography
-                    variant="h5"
-                    gutterBottom
-                    style={{ textAlign: "center" }}
-                  >
+                  <Typography variant="h5" gutterBottom align="center" style={{ color: "#24695C", fontWeight: "bold" }}>
                     Добавить транзакцию
                   </Typography>
                   <FormControl variant="outlined" margin="normal" fullWidth>
@@ -502,7 +504,7 @@ const AccountTransactionsPage = () => {
                     onClick={handleAddTransaction}
                     variant="contained"
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    sx={{ marginTop: 2 }}
                   >
                     Добавить транзакцию
                   </CustomButton>
@@ -525,10 +527,10 @@ const AccountTransactionsPage = () => {
             )}
           </FormContainer>
           <FormContainer elevation={3} sx={{ marginTop: 4 }}>
-            <Typography variant="h5" gutterBottom align="center">
+            <Typography variant="h5" gutterBottom align="center" style={{ color: "#24695C", fontWeight: "bold" }}>
               Транзакции счета {accountID}
             </Typography>
-            <Box display="flex" justifyContent="space-between" mb={2}>
+            <SearchContainer>
               <TextField
                 label="Поиск"
                 variant="outlined"
@@ -567,7 +569,7 @@ const AccountTransactionsPage = () => {
                   <MenuItem value="BYN">BYN</MenuItem>
                 </Select>
               </FormControl>
-            </Box>
+            </SearchContainer>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -583,19 +585,13 @@ const AccountTransactionsPage = () => {
                   {filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>
-                        {new Date(transaction.transactionTime).toLocaleString(
-                          "ru-BY",
-                          { timeZone: "Europe/Minsk" }
-                        )}
+                        {new Date(transaction.transactionTime).toLocaleString("ru-BY", { timeZone: "Europe/Minsk" })}
                       </TableCell>
                       <TableCell>{transaction.transactionType}</TableCell>
                       <TableCell>{transaction.amount}</TableCell>
                       <TableCell>{transaction.currency}</TableCell>
                       <TableCell>
-                        <CustomButton
-                          variant="contained"
-                          onClick={() => generateReceipt(transaction.id)}
-                        >
+                        <CustomButton variant="contained" onClick={() => generateReceipt(transaction.id)}>
                           Скачать чек
                         </CustomButton>
                       </TableCell>

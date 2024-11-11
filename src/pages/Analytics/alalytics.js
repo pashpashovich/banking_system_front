@@ -14,7 +14,7 @@ import TransactionTypePieChart from '../../components/charts/TransactionTypePieC
 import LogoutIcon from '@mui/icons-material/Logout';
 import axios from 'axios';
 
-const apiUrl2 = 'http://localhost:8000/clients/financial-analyst/';
+const apiUrl = 'http://localhost:8080/api';
 
 const StyledBox = styled(Box)({
   display: 'flex',
@@ -44,26 +44,11 @@ const Analytics = () => {
 
   useEffect(() => {
     if (!dataLoaded) {
-      Promise.all([
-        fetch(`http://localhost:8000/accounts/socials`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          },}).then(response => response.json()),
-        fetch(`http://localhost:8000/accounts/credit`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          },}).then(response => response.json()),
-        fetch(`http://localhost:8000/accounts/savings`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          },}).then(response => response.json()),
-        fetch(`http://localhost:8000/accounts/checking`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          },}).then(response => response.json())
-      ])
-        .then(([socialsData, creditData, savingsData, checkingData]) => {
-          setAccounts([...socialsData, ...creditData, ...savingsData, ...checkingData]);
+      axios.get(`${apiUrl}/accounts`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+      })
+        .then(response => {
+          setAccounts(response.data);
           setDataLoaded(true);
         })
         .catch(error => {
@@ -71,14 +56,12 @@ const Analytics = () => {
           setDataLoaded(true);
         });
     }
-    axios.get(`${apiUrl2}${userID}/`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-      },})
-    .then((response) => {
-      setAvatarUrl(response.data.user.avatar);
+
+    axios.get(`http://localhost:8080/api/users/${userID}/avatar`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
     })
-    .catch((error) => console.error('Error fetching avatar:', error));
+      .then((response) => setAvatarUrl(`data:image/jpeg;base64,${response.data}`))
+      .catch((error) => console.error("Ошибка загрузки аватара:", error));
   }, [dataLoaded]);
 
   useEffect(() => {
@@ -88,12 +71,11 @@ const Analytics = () => {
   }, [chartType, startDate, endDate]);
 
   const fetchTransactionsByDate = () => {
-    fetch(`http://localhost:8000/transactions/date-range/?start_date=${startDate}&end_date=${endDate}`,{
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-      },})
-      .then(response => response.json())
-      .then(data => setTransactionsByDate(data))
+    axios.get(`${apiUrl}/transactions/by-date`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` },
+      params: { startDate: startDate, endDate: endDate }
+    })
+      .then(response => setTransactionsByDate(response.data))
       .catch(error => console.error('Ошибка при загрузке транзакций:', error));
   };
 
@@ -140,13 +122,9 @@ const Analytics = () => {
     }
   };
 
-  
   const handleLogout = () => {
-    axios.post(
-      'http://localhost:8000/api/logout',
-      {
-        refresh_token: localStorage.getItem('refreshToken'),
-      },
+    axios.post(`${apiUrl}/auth/logout`, 
+      { refresh_token: localStorage.getItem('refreshToken') }, 
       {
         headers: {
           'Content-Type': 'application/json',
@@ -156,18 +134,11 @@ const Analytics = () => {
       }
     )
     .then(response => {
-      if (response.status !== 200) {
-        console.log(localStorage.getItem('refreshToken'));
-        return;
-      }
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       navigate('/login');
     })
-    .catch(error => {
-      console.error(error);
-      console.log(localStorage.getItem('refreshToken'));
-    });
+    .catch(error => console.error('Ошибка выхода:', error));
   };
 
   return (
@@ -177,9 +148,7 @@ const Analytics = () => {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <AppBar style={{ background: '#030E32' }} position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="h6" noWrap component="div">
-              Графики
-            </Typography>
+            <Typography variant="h6" noWrap component="div">Графики</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <HeaderAvatar alt="avatar" src={avatarUrl || "/static/images/avatar/1.jpg"} />
               <IconButton onClick={handleLogout}>
@@ -194,18 +163,14 @@ const Analytics = () => {
             <Box sx={{ marginBottom: 2 }}>
               <FormControl fullWidth variant="outlined">
                 <InputLabel>Тип графика</InputLabel>
-                <Select
-                  value={chartType}
-                  onChange={handleChartTypeChange}
-                  label="Тип графика"
-                >
+                <Select value={chartType} onChange={handleChartTypeChange} label="Тип графика">
                   <MenuItem value="accountDistribution">Распределение счетов</MenuItem>
                   <MenuItem value="transactionsByDate">Транзакции по дате</MenuItem>
                   <MenuItem value="clientsAccounts">Доходы клиентов и балансы их счетов</MenuItem>
                   <MenuItem value="boxPlotChart">Коробчатый график транзакций</MenuItem>
                   <MenuItem value="clientsIncomeAccounts">Доходы клиентов и количество счетов</MenuItem>
                   <MenuItem value="maxTransactions">Максимальные транзакции по дням</MenuItem>
-                  <MenuItem value="transactionTypePieChart">Количество транзакций по типам</MenuItem> {/* новый пункт меню */}
+                  <MenuItem value="transactionTypePieChart">Количество транзакций по типам</MenuItem>
                 </Select>
               </FormControl>
             </Box>

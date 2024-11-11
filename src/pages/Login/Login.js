@@ -41,7 +41,7 @@ const SignIn = () => {
         localStorage.setItem('userRole', role);
 
         switch (role) {
-          case 'analyst':
+          case 'admin':
             navigate(`/profile/${id}`);
             break;
           case 'client':

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Plot from 'react-plotly.js';
 import { Box, FormControl, InputLabel, Select, MenuItem, TextField, Button } from '@mui/material';
 import { styled } from '@mui/system';
-
+import axios from 'axios';
 
 const MyButton = styled(Button)({
   background: '#6a65ff',
@@ -22,9 +22,10 @@ const BoxPlotChart = ({ startDate, endDate, transactionType, setStartDate, setEn
     }).toString();
 
     try {
-      const response = await fetch(`http://localhost:8000/transactions/boxplot?${params}`);
-      const data = await response.json();
-      setPlotData(formatPlotData(data));
+      const response = await axios.get(`http://localhost:8080/api/transactions/boxplot?${params}`,{
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+      });
+      setPlotData(formatPlotData(response.data));
     } catch (error) {
       console.error('Ошибка при загрузке данных:', error);
     }
@@ -32,13 +33,12 @@ const BoxPlotChart = ({ startDate, endDate, transactionType, setStartDate, setEn
 
   const formatPlotData = (data) => {
     return data.labels.map((label, index) => ({
-      y: data.datasets[0].data[index],
+      y: data.datasets[index].data,
       type: 'box',
       name: label,
       boxpoints: 'all'
     }));
   };
-  
 
   return (
     <Box sx={{ width: '100%' }}>

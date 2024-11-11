@@ -27,23 +27,26 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   padding: theme.spacing(2),
-  backgroundColor: '#030E32',
+  backgroundColor: '#24695C',
   color: 'white',
   justifyContent: 'center',
   fontWeight: 'bold',
 }));
 
+
+
 const StyledDrawer = styled(Drawer)({
   '.MuiDrawer-paper': {
-    backgroundColor: '#030E32',
-    color: 'white',
+    backgroundColor: '#D9D9D9',
+    color: '#24695C',
     width: drawerWidth,
+    fontWeight: 'bold',
   },
 });
 
 const ListItemStyled = styled(ListItem)({
   '&:hover': {
-    backgroundColor: '#3A3A55',
+    backgroundColor: '#b0aeae',
   },
 });
 
@@ -74,25 +77,25 @@ const ClientMenu = ({ userID }) => {
       <List>
         <ListItemStyled button component={Link} to={`/profile/${userID}`}>
           <ListItemIcon>
-            <HomeIcon style={{ color: 'white' }} />
+            <HomeIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Профиль" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/data/${userID}`}>
           <ListItemIcon>
-            <DataUsageIcon style={{ color: 'white' }} />
+            <DataUsageIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Данные" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/analysis/${userID}`}>
           <ListItemIcon>
-            <AssessmentIcon style={{ color: 'white' }} />
+            <AssessmentIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Анализ" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/analytics/${userID}`}>
           <ListItemIcon>
-            <ShowChartIcon style={{ color: 'white' }} />
+            <ShowChartIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Графики" />
         </ListItemStyled>

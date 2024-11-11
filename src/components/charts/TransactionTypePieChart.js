@@ -13,7 +13,7 @@ const MyButton = styled(Button)({
   },
 });
 
-const apiUrl = 'http://localhost:8000/transactions/count-by-type/';
+const apiUrl = 'http://localhost:8080/api/transactions/count-by-type';
 
 const TransactionTypePieChart = () => {
   const [startDate, setStartDate] = useState(null);

@@ -13,7 +13,7 @@ const MyButton = styled(Button)({
   },
 });
 
-const apiUrl = 'http://localhost:8000/transactions/max-per-day/';
+const apiUrl = 'http://localhost:8080/api/transactions/max-stats';
 
 const MaxTransactionsChart = () => {
   const [startDate, setStartDate] = useState(null);
@@ -51,21 +51,20 @@ const MaxTransactionsChart = () => {
       })
       .then(response => {
         const data = response.data;
-        console.log(response.data);
         setChartData({
           labels: data.dates,
           datasets: [
             {
               ...chartData.datasets[0],
-              data: data.max_transfers,
+              data: data.maxTransfers,
             },
             {
               ...chartData.datasets[1],
-              data: data.max_withdrawals,
+              data: data.maxWithdrawals,
             },
             {
               ...chartData.datasets[2],
-              data: data.max_deposits,
+              data: data.maxDeposits,
             },
           ],
         });

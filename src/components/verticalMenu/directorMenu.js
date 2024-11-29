@@ -27,7 +27,7 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   padding: theme.spacing(2),
-  backgroundColor: '#030E32',
+  backgroundColor: '#24695C',
   color: 'white',
   justifyContent: 'center',
   fontWeight: 'bold',
@@ -35,15 +35,16 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
 
 const StyledDrawer = styled(Drawer)({
   '.MuiDrawer-paper': {
-    backgroundColor: '#030E32',
-    color: 'white',
+    backgroundColor: '#D9D9D9',
+    color: '#24695C',
     width: drawerWidth,
+    fontWeight: 'bold',
   },
 });
 
 const ListItemStyled = styled(ListItem)({
   '&:hover': {
-    backgroundColor: '#3A3A55',
+    backgroundColor: '#b0aeae',
   },
 });
 

@@ -11,27 +11,38 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import axios from "axios"; 
 
 function ResetPasswordDialog({ open, onClose }) {
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleResetPassword = async () => {
-    // Здесь будет логика запроса для сброса пароля
+    setLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
     try {
-      // Пример запроса на сервер (замените URL на ваш)
-      // await axios.post('http://localhost:8080/bank/auth/reset-password', { email });
-      onClose(); // Закрыть диалог при успешной отправке
+      await axios.post(`http://localhost:8080/api/auth/reset-password?email=${encodeURIComponent(email)}`);
+      setSuccessMessage("Ссылка для сброса пароля была отправлена на ваш email.");
+      setEmail("");
     } catch (error) {
-      setErrorMessage("Произошла ошибка при отправке данных.");
+      if (error.response && error.response.status === 400) {
+        setErrorMessage("Пользователь с таким email не найден");
+      } else {
+        setErrorMessage("Произошла ошибка при отправке данных.");
+      }
+    } finally {
+      setLoading(false); 
     }
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-        Восстановление пароля
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+          Восстановление пароля
         </Box>
         <IconButton
           aria-label="close"
@@ -42,7 +53,8 @@ function ResetPasswordDialog({ open, onClose }) {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        {errorMessage && <Typography color="error">{errorMessage}</Typography>}
+        {errorMessage && <Typography color="error" sx={{ mb: 2 }}>{errorMessage}</Typography>}
+        {successMessage && <Typography color="primary" sx={{ mb: 2 }}>{successMessage}</Typography>}
         <TextField
           label="Введите ваш email"
           type="email"
@@ -57,6 +69,7 @@ function ResetPasswordDialog({ open, onClose }) {
             variant="contained"
             color="primary"
             onClick={handleResetPassword}
+            disabled={loading} 
             sx={{
               fontWeight: "bold",
               backgroundColor: "#24695C",

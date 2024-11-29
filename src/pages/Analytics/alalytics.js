@@ -136,7 +136,7 @@ const Analytics = () => {
     .then(response => {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      navigate('/login');
+      navigate('/');
     })
     .catch(error => console.error('Ошибка выхода:', error));
   };

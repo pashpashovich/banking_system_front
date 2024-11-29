@@ -1,10 +1,23 @@
 import React, { useState } from 'react';
-import { TextField, Button, Typography, Box, Paper, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+  InputAdornment
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import axios from 'axios';
 import ResetDialog from "../resetPassword/ResetPassword";
-import RegisterDialog from '../registerDialog/RegisterDialog'; 
+import RegisterDialog from '../registerDialog/RegisterDialog';
 
 const USER_ROLES = {
   CLIENT: 'CLIENT',
@@ -18,7 +31,8 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [openResetDialog, setOpenResetDialog] = useState(false);
-  const [openRegisterDialog, setOpenRegisterDialog] = useState(false); 
+  const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
@@ -44,6 +58,9 @@ function LoginForm() {
           case USER_ROLES.ADMIN:
             navigate(`/profile/${id}`);
             break;
+          case USER_ROLES.DIRECTOR:
+            navigate(`/profileDir/${id}`)
+            break
           default:
             setErrorMessage('Неизвестная роль пользователя');
         }
@@ -52,8 +69,6 @@ function LoginForm() {
       }
     } catch (error) {
       if (error.response) {
-        console.log("Response Data:", error.response.data);
-        console.log("Response Status:", error.response.status);
         if (error.response.status === 403) {
           setErrorMessage('Ваш аккаунт деактивирован. Пожалуйста, свяжитесь с поддержкой.');
         } else if (error.response.status === 401) {
@@ -66,6 +81,8 @@ function LoginForm() {
       }
     }
   };
+
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
 
   return (
     <Paper elevation={3} sx={{ padding: 5, maxWidth: 500, mt: 5, mb: 5 }}>
@@ -101,13 +118,26 @@ function LoginForm() {
         </Typography>
         <TextField
           label="Введите ваш пароль"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           variant="outlined"
           fullWidth
           margin="dense"
           InputLabelProps={{ style: { color: '#24695C' } }}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleClickShowPassword}
+                  edge="end"
+                  aria-label="toggle password visibility"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
         />
 
         {errorMessage && (

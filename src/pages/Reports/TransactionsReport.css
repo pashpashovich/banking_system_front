@@ -1,0 +1,121 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .reset-password-container,
+  .transactions-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 1200px;
+  }
+  
+  .MuiAppBar-root {
+    background-color: #24695C !important;
+    box-shadow: none;
+  }
+  
+  .MuiAvatar-root {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .MuiIconButton-root {
+    color: #fff;
+  }
+  
+  .MuiTypography-h6 {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  
+  .MuiTextField-root {
+    margin: 10px 0;
+  }
+  
+  .MuiButton-root {
+    background-color: #24695C !important;
+    color: #fff !important;
+    font-weight: bold;
+    text-transform: none;
+  }
+  
+  .MuiButton-root:hover {
+    background-color: #1b4e44 !important;
+  }
+  
+  .custom-table .MuiDataGrid-root {
+    border: none;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  
+  .custom-table .MuiDataGrid-cell {
+    font-size: 14px;
+    color: #333;
+    text-align: center;
+  }
+  
+  .custom-table .MuiDataGrid-columnHeaders {
+    background-color: #24695C;
+    color: white;
+    font-size: 16px;
+    text-transform: uppercase;
+  }
+  
+  .custom-table .MuiDataGrid-row:hover {
+    background-color: rgba(36, 105, 92, 0.1);
+  }
+  
+  .custom-table .MuiDataGrid-footerContainer {
+    background-color: #f1f1f1;
+    border-top: 1px solid #ddd;
+  }
+  
+  .custom-table .MuiDataGrid-toolbar {
+    justify-content: flex-end;
+  }
+  
+  .search-box {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .search-box input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+  
+  .search-box input:focus {
+    outline: none;
+    border-color: #24695C;
+    box-shadow: 0 0 5px rgba(36, 105, 92, 0.5);
+  }
+  
+  @media (max-width: 768px) {
+    .transactions-container {
+      padding: 10px;
+    }
+  
+    .MuiDataGrid-root {
+      font-size: 12px;
+    }
+  
+    .MuiButton-root {
+      font-size: 14px;
+    }
+  }
+  

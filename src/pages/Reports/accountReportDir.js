@@ -29,12 +29,11 @@ import axios from "axios";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import ruLocale from "date-fns/locale/ru";
+import "./TransactionsReport.css";
 
-const apiUrl = "http://localhost:8000/transactions/";
-const statsUrl = "http://localhost:8000/transactions/stats/";
-const pdfUrl = "http://localhost:8000/transactions/generate-pdf/";
-const profileUrl = "http://localhost:8000/api/";
-const apiUrl2 = "http://localhost:8000/clients/bank-director/";
+const apiUrl = "http://localhost:8080/api/transactions/";
+const statsUrl = "http://localhost:8080/api/transactions/stats";
+const pdfUrl = "http://localhost:8080/api/transactions/generate-pdf";
 
 const StyledBox = styled(Box)({
   display: "flex",
@@ -45,6 +44,7 @@ const StyledBox = styled(Box)({
   backgroundColor: "#f5f5f5",
 });
 
+
 const MyButton = styled(Button)({
   background: "#6a65ff",
   ":hover": {
@@ -54,7 +54,7 @@ const MyButton = styled(Button)({
 
 const Header = styled(AppBar)({
   zIndex: 1300,
-  backgroundColor: "#030E32",
+  backgroundColor: "#24695C",
 });
 
 const MyToolbar = styled(Toolbar)({
@@ -84,6 +84,32 @@ const DatePickerGrid = styled(Grid)(({ theme }) => ({
   padding: theme.spacing(1),
 }));
 
+const CustomDataGrid = styled(DataGrid)({
+  backgroundColor: "white",
+  borderRadius: "10px",
+  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+  border: "none",
+
+  "& .MuiDataGrid-columnHeaders": {
+    backgroundColor: "#24695C",
+    color: "white",
+    fontSize: "16px",
+    textTransform: "uppercase",
+  },
+  "& .MuiDataGrid-cell": {
+    color: "#333",
+    fontSize: "14px",
+    textAlign: "center",
+  },
+  "& .MuiDataGrid-row:hover": {
+    backgroundColor: "rgba(36, 105, 92, 0.1)",
+  },
+  "& .MuiDataGrid-footerContainer": {
+    backgroundColor: "#f1f1f1",
+    borderTop: "1px solid #ddd",
+  },
+});
+
 function CustomToolbar() {
   return (
     <GridToolbarContainer>
@@ -98,14 +124,14 @@ const TransactionsReport = () => {
   const { userID } = useParams();
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
-  const [userData, setUserData] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [first_name, setFirstName] = useState("");
-  const [last_name, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [secondName, setSecondName] = useState("");
+  const [patronymicName, setPatronymicName] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -115,92 +141,78 @@ const TransactionsReport = () => {
 
   const columns = [
     { field: "id", headerName: "ID", width: 70 },
-    { field: "sender_account", headerName: "Счет отправителя", width: 130 },
-    { field: "recipient_account", headerName: "Счет получателя", width: 130 },
+    { field: "senderAccountId", headerName: "Счет отправителя", width: 200 },
+    { field: "recipientAccountId", headerName: "Счет получателя", width: 200 },
     { field: "amount", headerName: "Сумма", width: 130 },
     { field: "currency", headerName: "Валюта", width: 130 },
-    { field: "transaction_time", headerName: "Дата", width: 150 },
-    { field: "transaction_type", headerName: "Тип", width: 130 },
+    {
+      field: "transactionTime",
+      headerName: "Дата",
+      width: 220,
+      valueGetter: (params) => new Date(params.row.transactionTime),
+    },
+    { field: "transactionType", headerName: "Тип", width: 130 },
   ];
 
   useEffect(() => {
     axios
-      .get(`${apiUrl2}${userID}/`, {
+      .get(`http://localhost:8080/api/users/director/${userID}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       })
       .then((response) => {
-        setFirstName(response.data.first_name);
-        setLastName(response.data.last_name);
-        setAvatarUrl(response.data.user.avatar);
+        setFirstName(response.data.firstName);
+        setSecondName(response.data.secondName);
+        setPatronymicName(response.data.patronymicName);
       })
-      .catch((error) => {
-        if (error.response && error.response.status === 403) {
-          navigate('/forbidden'); 
-        } else if (error.response && error.response.status === 401) {
-          navigate('/login'); 
-        }
-      });
+      .catch((error) => handleApiErrors(error));
 
     axios
-      .get(`${profileUrl}${userID}/`, {
+      .get(`http://localhost:8080/api/users/${userID}/avatar`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       })
-      .then((response) => setUserData(response.data))
-      .catch((error) => {
-        if (error.response && error.response.status === 403) {
-          navigate('/forbidden'); 
-        } else if (error.response && error.response.status === 401) {
-          navigate('/login'); 
-        }
-      });
+      .then((response) =>
+        setAvatarUrl(`data:image/jpeg;base64,${response.data}`)
+      )
+      .catch((error) => console.error("Ошибка загрузки аватара:", error));
 
-    fetch(
-      `${apiUrl}?start_date=${
-        startDate ? startDate.toISOString().split("T")[0] : ""
-      }&end_date=${endDate ? endDate.toISOString().split("T")[0] : ""}`,{
+    axios
+      .get(apiUrl, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       })
-      .then((response) => response.json())
-      .then((data) => {
-        setTransactions(data);
-        setFilteredTransactions(data);
+      .then((response) => {
+        setTransactions(response.data);
+        setFilteredTransactions(response.data);
       })
-      .catch((error) => {
-        if (error.response && error.response.status === 403) {
-          navigate('/forbidden'); 
-        } else if (error.response && error.response.status === 401) {
-          navigate('/login'); 
-        }
-      });
+      .catch((error) => handleApiErrors(error));
+  }, [userID, navigate]);
 
-    fetchStats(startDate, endDate);
-  }, [userID, startDate, endDate]);
-
-  useEffect(() => {
-    if (searchText) {
-      const filteredData = transactions.filter((transaction) =>
-        String(transaction.sender_account).includes(searchText) ||
-        String(transaction.recipient_account).includes(searchText)
-      );
-      setFilteredTransactions(filteredData);
+  const handleApiErrors = (error) => {
+    if (error.response?.status === 403) {
+      navigate("/forbidden");
+    } else if (error.response?.status === 401) {
+      navigate("/login");
     } else {
-      setFilteredTransactions(transactions);
+      console.error("Ошибка при запросе:", error);
     }
-  }, [searchText, transactions]);
+  };
 
-  const fetchStats = async (startDate, endDate) => {
+  const fetchStats = async () => {
+    if (!startDate || !endDate || startDate > endDate) {
+      console.warn("Некорректные значения дат для запроса");
+      return;
+    }
     setLoading(true);
     try {
       const response = await axios.get(statsUrl, {
         params: {
-          start_date: startDate ? startDate.toISOString().split("T")[0] : "",
-          end_date: endDate ? endDate.toISOString().split("T")[0] : "",
+          startDate: startDate.toISOString().split("T")[0],
+          endDate: endDate.toISOString().split("T")[0],
         },
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -209,65 +221,92 @@ const TransactionsReport = () => {
       setStats(response.data);
     } catch (error) {
       console.error("Ошибка при загрузке статистики:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  const downloadPDF = () => {
-    setDownloading(true);
-    const params = new URLSearchParams({
-      start_date: startDate ? startDate.toISOString().split("T")[0] : "",
-      end_date: endDate ? endDate.toISOString().split("T")[0] : "",
-      first_name: first_name,
-      last_name: last_name,
-    }).toString();
-
-    fetch(`${pdfUrl}?${params}`)
-      .then((response) => response.blob())
-      .then((blob) => {
-        const url = window.URL.createObjectURL(new Blob([blob]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "transactions_report.pdf");
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      })
-      .catch((error) => console.error("Ошибка при загрузке PDF:", error))
-      .finally(() => setDownloading(false));
   };
 
   const handleSearch = (event) => {
-    setSearchText(event.target.value);
+    const value = event.target.value;
+    setSearchText(value);
+    if (value) {
+      const filteredData = transactions.filter(
+        (transaction) =>
+          String(transaction.senderAccountId).includes(value) ||
+          String(transaction.recipientAccountId).includes(value)
+      );
+      setFilteredTransactions(filteredData);
+    } else {
+      setFilteredTransactions(transactions);
+    }
+  };
+
+  const downloadPDF = async () => {
+    if (!startDate || !endDate || startDate > endDate) {
+      console.warn("Некорректные значения дат для скачивания отчета");
+      return;
+    }
+    setDownloading(true);
+    const params = {
+      startDate: startDate.toISOString().split("T")[0],
+      endDate: endDate.toISOString().split("T")[0],
+      firstName,
+      secondName,
+      patronymicName,
+    };
+    try {
+      const response = await axios.get(pdfUrl, {
+        params,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `transaction_report_${startDate.toISOString().split("T")[0]}.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error("Ошибка при скачивании PDF:", error);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleLogout = () => {
-    axios.post(
-      'http://localhost:8000/api/logout',
-      {
-        refresh_token: localStorage.getItem('refreshToken'),
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+    axios
+      .post(
+        "http://localhost:8080/api/auth/logout",
+        {
+          refresh_token: localStorage.getItem("refreshToken"),
         },
-        withCredentials: true
-      }
-    )
-    .then(response => {
-      if (response.status !== 200) {
-        console.log(localStorage.getItem('refreshToken'));
-        return;
-      }
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      navigate('/login');
-    })
-    .catch(error => {
-      console.error(error);
-      console.log(localStorage.getItem('refreshToken'));
-    });
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          withCredentials: true,
+        }
+      )
+      .then((response) => {
+        if (response.status !== 200) {
+          console.log(localStorage.getItem("refreshToken"));
+          return;
+        }
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        navigate("/");
+      })
+      .catch((error) => {
+        console.error(error);
+        console.log(localStorage.getItem("refreshToken"));
+      });
   };
 
   return (
@@ -277,12 +316,20 @@ const TransactionsReport = () => {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Header position="fixed">
           <MyToolbar>
-            <Typography style={{ color: "white" }} variant="h6" noWrap component="div">
+            <Typography
+              style={{ color: "white" }}
+              variant="h6"
+              noWrap
+              component="div"
+            >
               Анализ
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center" }}>
-              <HeaderAvatar alt={"User Avatar"} src={avatarUrl || "/static/images/avatar/1.jpg"} />
-              <IconButton onClick={handleLogout}>
+              <HeaderAvatar
+                alt="User Avatar"
+                src={avatarUrl || "/static/images/avatar/1.jpg"}
+              />
+              <IconButton onClick={() => handleLogout()}>
                 <LogoutIcon style={{ color: "white" }} />
               </IconButton>
             </Box>
@@ -291,7 +338,10 @@ const TransactionsReport = () => {
         <Toolbar />
         <StyledBox>
           <DateContainer>
-            <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              locale={ruLocale}
+            >
               <DatePickerGrid item xs={12} sm={6} md={4}>
                 <DatePicker
                   label="Начальная дата"
@@ -311,47 +361,179 @@ const TransactionsReport = () => {
             </LocalizationProvider>
           </DateContainer>
           <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-            <MyButton variant="contained" color="primary" onClick={downloadPDF} disabled={downloading}>
+            <MyButton onClick={fetchStats} variant="contained" color="primary">
+              Загрузить статистику
+            </MyButton>
+            <MyButton
+              onClick={downloadPDF}
+              variant="contained"
+              color="secondary"
+              disabled={downloading}
+              sx={{ ml: 2 }}
+            >
               {downloading ? "Загрузка..." : "Скачать отчет в PDF"}
             </MyButton>
           </Box>
           {loading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "300px",
+              }}
+            >
               <CircularProgress />
             </Box>
           ) : (
             stats && (
-              <Paper elevation={3} sx={{ padding: 2, width: "100%", mt: 3 }}>
-                <Typography variant="h6" gutterBottom>
+              <Paper
+                elevation={3}
+                sx={{
+                  padding: 3,
+                  width: "100%",
+                  mt: 4,
+                  borderRadius: "10px",
+                  backgroundColor: "#fff",
+                  boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    color: "#24695C",
+                    marginBottom: 2,
+                  }}
+                >
                   Статистика транзакций
                 </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <Paper elevation={3} sx={{ padding: 2, height: "100%" }}>
-                      <Typography variant="body1">
-                        <strong>Максимальная транзакция:</strong> {stats.max_transaction}  <strong>BYN</strong>
+                <Grid container spacing={3} justifyContent="space-evenly">
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        padding: 2,
+                        borderRadius: "8px",
+                        backgroundColor: "#F8FAF9",
+                        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: "bold",
+                          color: "#4CAF50",
+                          marginBottom: 1,
+                        }}
+                      >
+                        Максимальная транзакция
                       </Typography>
-                      <LinearProgress variant="determinate" value={(stats.max_transaction / stats.max_transaction) * 100} />
-                      <Typography variant="body1">
-                        <strong>Минимальная транзакция:</strong> {stats.min_transaction} <strong>BYN</strong>
+                      <Typography
+                        variant="h6"
+                        sx={{ color: "#24695C", marginBottom: 1 }}
+                      >
+                        {stats.maxTransaction} BYN
                       </Typography>
-                      <LinearProgress variant="determinate" value={(stats.min_transaction / stats.max_transaction) * 100} />
-                      <Typography variant="body1">
-                        <strong>Средняя транзакция:</strong> {stats.avg_transaction} <strong>BYN</strong>
-                      </Typography>
-                      <LinearProgress variant="determinate" value={(stats.avg_transaction / stats.max_transaction) * 100} />
+                      <LinearProgress
+                        variant="determinate"
+                        value={100}
+                        sx={{
+                          height: 10,
+                          borderRadius: 5,
+                          backgroundColor: "#E3F2E5",
+                          "& .MuiLinearProgress-bar": {
+                            backgroundColor: "#4CAF50",
+                          },
+                        }}
+                      />
                     </Paper>
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Paper elevation={3} sx={{ padding: 2, height: "100%" }}>
-                      <Typography variant="body1">
-                        <strong>Всего зачислений:</strong> {stats.total_deposits} <strong>BYN</strong>
+
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        padding: 2,
+                        borderRadius: "8px",
+                        backgroundColor: "#FFF8E1",
+                        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: "bold",
+                          color: "#FFC107",
+                          marginBottom: 1,
+                        }}
+                      >
+                        Минимальная транзакция
                       </Typography>
-                      <CircularProgress variant="determinate" value={(stats.total_deposits / (stats.total_deposits + stats.total_withdrawals)) * 100} />
-                      <Typography variant="body1">
-                        <strong>Всего списаний:</strong> {stats.total_withdrawals} <strong>BYN</strong>
+                      <Typography
+                        variant="h6"
+                        sx={{ color: "#FF9800", marginBottom: 1 }}
+                      >
+                        {stats.minTransaction} BYN
                       </Typography>
-                      <CircularProgress variant="determinate" value={(stats.total_withdrawals / (stats.total_deposits + stats.total_withdrawals)) * 100} />
+                      <LinearProgress
+                        variant="determinate"
+                        value={
+                          (stats.minTransaction / stats.maxTransaction) * 100
+                        }
+                        sx={{
+                          height: 10,
+                          borderRadius: 5,
+                          backgroundColor: "#FFF3E0",
+                          "& .MuiLinearProgress-bar": {
+                            backgroundColor: "#FFC107",
+                          },
+                        }}
+                      />
+                    </Paper>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        padding: 2,
+                        borderRadius: "8px",
+                        backgroundColor: "#E3F2FD",
+                        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: "bold",
+                          color: "#2196F3",
+                          marginBottom: 1,
+                        }}
+                      >
+                        Средняя транзакция
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{ color: "#1976D2", marginBottom: 1 }}
+                      >
+                        {stats.avgTransaction} BYN
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={
+                          (stats.avgTransaction / stats.maxTransaction) * 100
+                        }
+                        sx={{
+                          height: 10,
+                          borderRadius: 5,
+                          backgroundColor: "#E1F5FE",
+                          "& .MuiLinearProgress-bar": {
+                            backgroundColor: "#2196F3",
+                          },
+                        }}
+                      />
                     </Paper>
                   </Grid>
                 </Grid>
@@ -359,18 +541,22 @@ const TransactionsReport = () => {
             )
           )}
 
-          <TextField value={searchText} onChange={handleSearch} placeholder="Поиск по счетам" variant="outlined" fullWidth margin="normal" />
+          <TextField
+            value={searchText}
+            onChange={handleSearch}
+            placeholder="Поиск по счетам"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+          />
           <Box sx={{ height: 600, width: "100%" }}>
-            <DataGrid
+            <CustomDataGrid
               rows={filteredTransactions}
               columns={columns}
               pageSize={10}
               rowsPerPageOptions={[10, 20, 50]}
-              components={{
-                Toolbar: CustomToolbar,
-              }}
+              components={{ Toolbar: CustomToolbar }}
               filterModel={filterModel}
-              onFilterModelChange={(model) => setFilterModel(model)}
             />
           </Box>
         </StyledBox>

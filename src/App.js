@@ -1,7 +1,5 @@
 import React from 'react';
 import MainPage from "./pages/mainPage/MainPage";
-import RegisterPage from "./pages/Register/AuthPage";
-import LoginPage from "./pages/Login/Login"
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProfilePage from './pages/PersonalPage/ProfilePage';
 import ClientsPage from './pages/ClientsPage/ClientsPage';
@@ -18,6 +16,7 @@ import ClientProfilePage from './pages/clientProfile/ClientProfile';
 import ClientsAccPage from './pages/ClientsProfileAccs/clientsAccs';
 import ClientsAccTrPage from './pages/ClientAccsTransactions/clientAccsTransactions';
 import ClientReportPage from './pages/userReportPage/userReportPage'
+import ResetPasswordPage from "./pages/ResetPass/ResetPasswordPage";
 
 
 
@@ -30,7 +29,6 @@ function App() {
         <Router>
             <Routes>
                 <Route path="/" element={<MainPage/>}></Route>
-                <Route path="/reg" element={<RegisterPage/>}></Route>
                 <Route path="/profile/:userID" element={<ProfilePage/> }></Route>
                 <Route path="/profileDir/:userID" element={<DirectorProfilePage/> }></Route>
                 <Route path="/profileCl/:userID" element={<ClientProfilePage/> }></Route>
@@ -46,6 +44,7 @@ function App() {
                 <Route path="/analytics/:userID" element={<Analytics/>} />
                 <Route path="/analysis/:userID" element={<TransactionsReport/>} />
                 <Route path="/forbidden" element={<Forbidden />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
             </Routes>
         </Router>
     </div>

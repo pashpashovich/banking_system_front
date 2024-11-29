@@ -84,7 +84,7 @@ const Profile = () => {
         if (error.response && error.response.status === 403) {
           navigate("/forbidden");
         } else if (error.response && error.response.status === 401) {
-          navigate("/login");
+          navigate("/");
         }
       });
       axios

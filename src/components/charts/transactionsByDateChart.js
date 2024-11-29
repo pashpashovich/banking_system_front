@@ -53,7 +53,7 @@ const TransactionsByDateChart = ({ transactions, startDate, endDate, setStartDat
             data: {
                 labels: dates,
                 datasets: [{
-                    label: 'Transactions by Date',
+                    label: 'Количество транзакций по датам',
                     data: data,
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     borderColor: 'rgba(54, 162, 235, 1)',

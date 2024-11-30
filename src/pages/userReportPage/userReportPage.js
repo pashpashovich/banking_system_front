@@ -1,39 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Paper, Typography, AppBar, Toolbar, CssBaseline, IconButton, Avatar, FormControl, InputLabel, Select, MenuItem, CircularProgress, Button } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
-import LogoutIcon from '@mui/icons-material/Logout';
-import ClientMenu from '../../components/verticalMenu/ClientMenu';
-import DailyTransactionsChart from '../../components/charts/dailyTransactionChart';
-import TransactionStats from '../../components/stats/statsUserTransactions';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Box,
+  Paper,
+  Typography,
+  AppBar,
+  Toolbar,
+  CssBaseline,
+  IconButton,
+  Avatar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
+  Button,
+} from "@mui/material";
+import { styled, useTheme } from "@mui/material/styles";
+import LogoutIcon from "@mui/icons-material/Logout";
+import ClientMenu from "../../components/verticalMenu/ClientMenu";
+import DailyTransactionsChart from "../../components/charts/dailyTransactionChart";
+import TransactionStats from "../../components/stats/statsUserTransactions";
 import axios from "axios";
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { CenterFocusStrong } from "@mui/icons-material";
 
-const apiUrl = 'http://localhost:8000/clients';
-const pdfUrl = 'http://localhost:8080/api/transactions/report/';
-const userUrl = 'http://localhost:8080/api/users';
+const apiUrl = "http://localhost:8000/clients";
+const pdfUrl = "http://localhost:8080/api/transactions/report/";
+const userUrl = "http://localhost:8080/api/users";
 
 const MenuContainer = styled(Box)({
-  display: 'flex',
+  display: "flex",
 });
 
 const ContentContainer = styled(Box)(({ theme }) => ({
   flexGrow: 1,
   padding: theme.spacing(3),
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  width: '100%',
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  width: "100%",
   maxWidth: 800,
-  margin: '0 auto',
-  boxSizing: 'border-box',
-  [theme.breakpoints.down('sm')]: {
+  margin: "0 auto",
+  boxSizing: "border-box",
+  [theme.breakpoints.down("sm")]: {
     padding: theme.spacing(1),
   },
 }));
 
 const MyToolbar = styled(Toolbar)({
-  color: '#051139',
+  color: "#051139",
 });
 
 const HeaderAvatar = styled(Avatar)({
@@ -41,14 +57,22 @@ const HeaderAvatar = styled(Avatar)({
   height: 40,
 });
 
+const ButtonContainer = styled(Box)({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: "16px",
+});
+
 const DetailsButton = styled(Button)(({ theme }) => ({
-  color: '#24695C',
-  backgroundColor: '#E0F2F1',
-  '&:hover': {
-    backgroundColor: '#B2DFDB',
+  color: "#FFFFFF",
+  backgroundColor: "#24695C",
+  "&:hover": {
+    backgroundColor: "#1E5B4E",
   },
-  borderRadius: '20px',
-  textTransform: 'none',
+  borderRadius: "20px",
+  textTransform: "none",
+  padding: "10px 20px",
 }));
 
 const UserReportPage = () => {
@@ -60,28 +84,29 @@ const UserReportPage = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState([]);
-  const [selectedAccount, setSelectedAccount] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [downloading, setDownloading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
-    axios.get(`${userUrl}/${userID}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      },
-    })
-      .then(response => {
+    axios
+      .get(`${userUrl}/${userID}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      })
+      .then((response) => {
         setUserData(response.data);
       })
-      .catch(error => {
-        console.error('Error loading user data:', error);
+      .catch((error) => {
+        console.error("Error loading user data:", error);
       });
 
-      axios
+    axios
       .get(`http://localhost:8080/api/users/${userID}/avatar`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -98,16 +123,17 @@ const UserReportPage = () => {
   }, [userID]);
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/api/accounts/by-user/${userID}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      },
-    })
-      .then(response => {
+    axios
+      .get(`http://localhost:8080/api/accounts/by-user/${userID}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      })
+      .then((response) => {
         setAccounts(response.data);
       })
-      .catch(error => {
-        console.error('Error loading account data:', error);
+      .catch((error) => {
+        console.error("Error loading account data:", error);
       });
   }, [userID, selectedAccount, navigate]);
 
@@ -120,52 +146,59 @@ const UserReportPage = () => {
 
   const fetchTransactionData = async (account, month) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/transactions/${account}/${month}/daily`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+      const response = await axios.get(
+        `http://localhost:8080/api/transactions/${account}/${month}/daily`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
       setDailyTransactions(response.data);
     } catch (error) {
-      console.error('Error refreshing transaction data:', error);
+      console.error("Error refreshing transaction data:", error);
     }
   };
 
   const fetchTransactionStats = async (account, month) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/transactions/${account}/${month}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+      const response = await axios.get(
+        `http://localhost:8080/api/transactions/${account}/${month}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
       setData(response.data);
     } catch (error) {
-      console.error('Error refreshing transaction data:', error);
+      console.error("Error refreshing transaction data:", error);
     }
   };
 
   const handleLogout = () => {
-    axios.post(
-      'http://localhost:8080/api/auth/logout',
-      {
-        refresh_token: localStorage.getItem('refreshToken'),
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+    axios
+      .post(
+        "http://localhost:8080/api/auth/logout",
+        {
+          refresh_token: localStorage.getItem("refreshToken"),
         },
-        withCredentials: true,
-      }
-    )
-    .then(response => {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      navigate('/');
-    })
-    .catch(error => {
-      console.error(error);
-    });
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          withCredentials: true,
+        }
+      )
+      .then((response) => {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        navigate("/");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const handleBack = () => {
@@ -179,12 +212,13 @@ const UserReportPage = () => {
     }
 
     setDownloading(true);
-    axios.get(`${pdfUrl}${selectedAccount}/${selectedMonth}`, {
-            headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      },
-      responseType: 'blob',
-    })
+    axios
+      .get(`${pdfUrl}${selectedAccount}/${selectedMonth}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        responseType: "blob",
+      })
       .then((response) => {
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement("a");
@@ -192,14 +226,27 @@ const UserReportPage = () => {
         link.setAttribute("download", "user_report.pdf");
         document.body.appendChild(link);
         link.click();
-              link.remove();
+        link.remove();
         window.URL.revokeObjectURL(url);
       })
       .catch((error) => console.error("Error downloading PDF:", error))
       .finally(() => setDownloading(false));
   };
 
-  const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+  const monthNames = [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+  ];
   const selectedMonthName = monthNames[selectedMonth - 1];
 
   const getCurrentDateOrEndOfMonth = (selectedMonth) => {
@@ -217,24 +264,38 @@ const UserReportPage = () => {
     <MenuContainer>
       <CssBaseline />
       <ClientMenu userID={userID} />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: '#24695C' }}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="h6" noWrap component="div">
+      <AppBar
+        position="fixed"
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          background: "#24695C",
+        }}
+      >
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Typography variant="h5" noWrap component="div">
             Отчетность
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <HeaderAvatar alt={userData?.first_name} src={avatarUrl || "/static/images/avatar/1.jpg"} />
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <HeaderAvatar
+              alt={userData?.first_name}
+              src={avatarUrl || "/static/images/avatar/1.jpg"}
+            />
             <IconButton onClick={handleLogout}>
-              <LogoutIcon style={{ color: 'white' }} />
+              <LogoutIcon style={{ color: "white" }} />
             </IconButton>
           </Box>
         </Toolbar>
       </AppBar>
       <ContentContainer>
         <Toolbar />
-        <Paper elevation={3} sx={{ padding: 2, width: '100%', mt: 3 }}>
+        <Paper elevation={3} sx={{ padding: 2, width: "100%", mt: 3 }}>
           {!loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              height="50vh"
+            >
               <CircularProgress />
             </Box>
           ) : (
@@ -242,11 +303,14 @@ const UserReportPage = () => {
               <FormControl fullWidth margin="normal">
                 <InputLabel>Счет</InputLabel>
                 <Select
-                  value={selectedAccount || ''}
-                  onChange={e => setSelectedAccount(e.target.value)}
+                  value={selectedAccount || ""}
+                  onChange={(e) => setSelectedAccount(e.target.value)}
                 >
-                  {accounts.map(account => (
-                    <MenuItem key={account.accountNum} value={account.accountNum}>
+                  {accounts.map((account) => (
+                    <MenuItem
+                      key={account.accountNum}
+                      value={account.accountNum}
+                    >
                       {account.accountNum}
                     </MenuItem>
                   ))}
@@ -256,7 +320,7 @@ const UserReportPage = () => {
                 <InputLabel>Месяц</InputLabel>
                 <Select
                   value={selectedMonth}
-                  onChange={e => setSelectedMonth(e.target.value)}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
                 >
                   {monthNames.map((month, index) => (
                     <MenuItem key={index + 1} value={index + 1}>
@@ -265,13 +329,30 @@ const UserReportPage = () => {
                   ))}
                 </Select>
               </FormControl>
-              <TransactionStats data={data} selectedMonthName={selectedMonthName} displayDate={displayDate} />
-              <DailyTransactionsChart data={dailyTransactions} days={displayDate} />
-              <DetailsButton variant="contained" color="primary" onClick={downloadPDF} disabled={downloading} sx={{ mt: 3 }}>
-                {downloading ? "Скачивание..." : "Скачать отчет PDF"}
-              </DetailsButton>
+              <TransactionStats
+                data={data}
+                selectedMonthName={selectedMonthName}
+                displayDate={displayDate}
+              />
+              <DailyTransactionsChart
+                data={dailyTransactions}
+                days={displayDate}
+              />
+              <ButtonContainer>
+                <DetailsButton
+                  variant="contained"
+                  color="primary"
+                  onClick={downloadPDF}
+                  disabled={downloading}
+                  sx={{ mt: 3 }}
+                >
+                  {downloading ? "Скачивание..." : "Скачать отчет PDF"}
+                </DetailsButton>
+              </ButtonContainer>
               {errorMessage && (
-                <Typography color="error" sx={{ mt: 1 }}>{errorMessage}</Typography>
+                <Typography color="error" sx={{ mt: 1 }}>
+                  {errorMessage}
+                </Typography>
               )}
             </>
           )}

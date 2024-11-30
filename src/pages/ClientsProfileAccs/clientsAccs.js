@@ -124,9 +124,9 @@ const ClientAccsPage = () => {
       <ClientMenu userID={userID} />
       <AppBarStyled position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <TitleTypography variant="h6" noWrap component="div">
+          <Typography variant="h5" noWrap component="div">
             Счета
-          </TitleTypography>
+          </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             {clientInfo && (
               <Avatar

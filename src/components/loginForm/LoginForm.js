@@ -101,10 +101,10 @@ function LoginForm() {
 
       <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off" sx={{ mt: 3 }}>
         <Typography variant="subtitle2" sx={{ color: '#24695C' }}>
-          Логин
+        Введите ваш логин
         </Typography>
         <TextField
-          label="Введите ваш логин"
+          label="Логин"
           variant="outlined"
           fullWidth
           margin="dense"
@@ -114,10 +114,10 @@ function LoginForm() {
         />
 
         <Typography variant="subtitle2" sx={{ color: '#24695C', mt: 2 }}>
-          Пароль
+          Введите Ваш пароль
         </Typography>
         <TextField
-          label="Введите ваш пароль"
+          label="Пароль"
           type={showPassword ? 'text' : 'password'}
           variant="outlined"
           fullWidth

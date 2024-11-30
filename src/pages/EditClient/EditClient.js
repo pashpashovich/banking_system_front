@@ -54,7 +54,6 @@ const MyButton = styled(Button)({
   },
 });
 
-// Функция для проверки уникальности email
 const handleEmailCheck = async (email) => {
   try {
     const response = await axios.get(`${apiUrl}/email-check`, {
@@ -85,7 +84,7 @@ const EditClient = () => {
   const [userData, setUserData] = useState({
     email: "",
   });
-  const [initialEmail, setInitialEmail] = useState(""); // Храним начальное значение email
+  const [initialEmail, setInitialEmail] = useState(""); 
   const [errorText, setErrorText] = useState("");
   const [analystData, setAnalystData] = useState("");
 
@@ -115,13 +114,13 @@ const EditClient = () => {
       })
       .then((response) => {
         setClientData(response.data);
-        setInitialEmail(response.data.email); // Устанавливаем начальное значение email
+        setInitialEmail(response.data.email); 
       }) 
       .catch((error) => {
         if (error.response && error.response.status === 403) {
           navigate("/forbidden");
         } else if (error.response && error.response.status === 401) {
-          navigate("/login");
+          navigate("/");
         }
       });
 
@@ -177,7 +176,6 @@ const EditClient = () => {
       return;
     }
 
-    // Проверяем уникальность email только если он изменился
     if (email !== initialEmail) {
       const isEmailUnique = await handleEmailCheck(email);
 

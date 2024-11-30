@@ -30,7 +30,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import LogoutIcon from "@mui/icons-material/Logout";
 import axios from "axios";
 import BankDirectorMenu from "../../components/verticalMenu/directorMenu";
-import { styled } from "@mui/system";
+import { styled, textAlign } from "@mui/system";
 
 const apiUrl = "http://localhost:8080/api/admin/users";
 
@@ -42,15 +42,18 @@ const HeaderAvatar = styled(Avatar)({
 const MyButton = styled(Button)({
   backgroundColor: "#24695C",
   color: "#FFFFFF",
-  ":hover": {
+  "&:hover": {
     backgroundColor: "#1E564A",
   },
 });
 
 const StyledTableHead = styled(TableCell)({
-  backgroundColor: "#f5f5f5",
+  backgroundColor: "#24695C",
+  color: "#FFFFFF",
   fontWeight: "bold",
   fontSize: "16px",
+  cursor: "pointer",
+  textAlign: "center",
 });
 
 const StyledDialogTitle = styled(DialogTitle)({
@@ -63,6 +66,15 @@ const StyledDialogActions = styled(DialogActions)({
   justifyContent: "center",
 });
 
+const styles = {
+  activeRow: {
+    backgroundColor: "#e8f5e9",
+  },
+  inactiveRow: {
+    backgroundColor: "#fbe9e7",
+  },
+};
+
 const UserManagementPage = () => {
   const navigate = useNavigate();
   const { userID } = useParams();
@@ -71,6 +83,7 @@ const UserManagementPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
   useEffect(() => {
     checkAccessToken();
@@ -131,13 +144,11 @@ const UserManagementPage = () => {
         user.role === "CLIENT"
           ? `http://localhost:8080/api/users/client/${user.id}`
           : `http://localhost:8080/api/users/admin/${user.id}`;
-      
       const response = await axios.get(endpoint, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       });
-  
       if (response && response.data) {
         setSelectedUser({ ...response.data, changeRole: false });
         setDialogOpen(true);
@@ -155,31 +166,19 @@ const UserManagementPage = () => {
   const handleSaveChanges = async () => {
     try {
       const { changeRole, role } = selectedUser;
-
-      // Если нужно сменить роль
-      if (changeRole) {
-        const roleEndpoint =
-          role === "CLIENT"
-            ? `${apiUrl}/toClient/${selectedUser.id}`
-            : `${apiUrl}/toAdmin/${selectedUser.id}`;
-        await axios.patch(roleEndpoint, selectedUser, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        });
-      } else {
-        // Если роль не меняется, обновляем только данные
-        const dataEndpoint =
-          role === "CLIENT"
-            ? `${apiUrl}/client/${selectedUser.id}`
-            : `${apiUrl}/adm/${selectedUser.id}`;
-        await axios.patch(dataEndpoint, selectedUser, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        });
-      }
-
+      const endpoint =
+        changeRole && role === "CLIENT"
+          ? `${apiUrl}/toClient/${selectedUser.id}`
+          : changeRole && role === "ADMIN"
+          ? `${apiUrl}/toAdmin/${selectedUser.id}`
+          : role === "CLIENT"
+          ? `${apiUrl}/client/${selectedUser.id}`
+          : `${apiUrl}/adm/${selectedUser.id}`;
+      await axios.patch(endpoint, selectedUser, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
       fetchUsers();
       handleCloseDialog();
     } catch (error) {
@@ -189,11 +188,15 @@ const UserManagementPage = () => {
 
   const handleUpdateStatus = async (userId, action) => {
     try {
-      await axios.post(`${apiUrl}/${userId}/status`, { action }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
+      await axios.post(
+        `${apiUrl}/${userId}/status`,
+        { action },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
       fetchUsers();
     } catch (error) {
       console.error("Error updating user status:", error);
@@ -217,7 +220,31 @@ const UserManagementPage = () => {
     setSearchQuery(e.target.value);
   };
 
-  const filteredUsers = users.filter((user) =>
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedUsers = React.useMemo(() => {
+    let sortableUsers = [...users];
+    if (sortConfig.key !== null) {
+      sortableUsers.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableUsers;
+  }, [users, sortConfig]);
+
+  const filteredUsers = sortedUsers.filter((user) =>
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -234,7 +261,7 @@ const UserManagementPage = () => {
           }}
         >
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Typography variant="h6" noWrap component="div">
+            <Typography variant="h5" noWrap component="div">
               Управление пользователями
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -250,9 +277,11 @@ const UserManagementPage = () => {
         </AppBar>
         <Toolbar />
         <Container maxWidth="lg">
-          <Typography variant="h4" gutterBottom>
-            Список пользователей
-          </Typography>
+          <Box display="flex" justifyContent="center">
+            <Typography variant="h4" gutterBottom>
+              Список пользователей
+            </Typography>
+          </Box>
           <TextField
             label="Поиск по Email"
             variant="outlined"
@@ -266,24 +295,39 @@ const UserManagementPage = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <StyledTableHead>ID</StyledTableHead>
-                    <StyledTableHead>Email</StyledTableHead>
-                    <StyledTableHead>Имя</StyledTableHead>
-                    <StyledTableHead>Фамилия</StyledTableHead>
-                    <StyledTableHead>Отчество</StyledTableHead>
-                    <StyledTableHead>Роль</StyledTableHead>
-                    <StyledTableHead>Статус</StyledTableHead>
+                    <StyledTableHead onClick={() => handleSort("id")}>
+                      ID
+                    </StyledTableHead>
+                    <StyledTableHead onClick={() => handleSort("email")}>
+                      Email
+                    </StyledTableHead>
+                    <StyledTableHead onClick={() => handleSort("firstName")}>
+                      Имя
+                    </StyledTableHead>
+                    <StyledTableHead onClick={() => handleSort("secondName")}>
+                      Фамилия
+                    </StyledTableHead>
+                    <StyledTableHead onClick={() => handleSort("role")}>
+                      Роль
+                    </StyledTableHead>
+                    <StyledTableHead onClick={() => handleSort("active")}>
+                      Статус
+                    </StyledTableHead>
                     <StyledTableHead>Действия</StyledTableHead>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
+                    <TableRow
+                      key={user.id}
+                      style={
+                        user.active ? styles.activeRow : styles.inactiveRow
+                      }
+                    >
                       <TableCell>{user.id}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.firstName}</TableCell>
                       <TableCell>{user.secondName}</TableCell>
-                      <TableCell>{user.patronymicName}</TableCell>
                       <TableCell>{user.role}</TableCell>
                       <TableCell>
                         {user.active ? "Активен" : "Заблокирован"}
@@ -309,9 +353,7 @@ const UserManagementPage = () => {
                               variant="outlined"
                               color={user.active ? "warning" : "success"}
                             >
-                              {user.active
-                                ? "Заблокировать"
-                                : "Разблокировать"}
+                              {user.active ? "Заблокировать" : "Разблокировать"}
                             </Button>
                           </Grid>
                           <Grid item>
@@ -377,7 +419,7 @@ const UserManagementPage = () => {
                 onChange={(e) =>
                   setSelectedUser({
                     ...selectedUser,
-                    secondName: e.target.value,
+                    lastName: e.target.value,
                   })
                 }
                 fullWidth
@@ -447,7 +489,7 @@ const UserManagementPage = () => {
                   setSelectedUser({
                     ...selectedUser,
                     role: e.target.value,
-                    changeRole: true, // Flag for role change
+                    changeRole: true,
                   })
                 }
                 margin="normal"

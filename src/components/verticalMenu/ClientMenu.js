@@ -77,12 +77,6 @@ const ClientMenu = ({ userID }) => {
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/client/reports/${userID}`}>
           <ListItemIcon>
-            <CreditCardIcon style={{ color: '#24695C' }} />
-          </ListItemIcon>
-          <ListItemText primary="Карты" />
-        </ListItemStyled>
-        <ListItemStyled button component={Link} to={`/client/reports/${userID}`}>
-          <ListItemIcon>
             <AssessmentIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Аналитика" />

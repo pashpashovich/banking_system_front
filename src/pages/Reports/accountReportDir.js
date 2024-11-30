@@ -318,7 +318,7 @@ const TransactionsReport = () => {
           <MyToolbar>
             <Typography
               style={{ color: "white" }}
-              variant="h6"
+              variant="h5"
               noWrap
               component="div"
             >

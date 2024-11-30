@@ -65,19 +65,19 @@ const BankDirectorMenu = ({ userID }) => {
       <List>
         <ListItemStyled button component={Link} to={`/profileDir/${userID}`}>
           <ListItemIcon>
-            <HomeIcon style={{ color: 'white' }} />
+            <HomeIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Профиль" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/director/users/${userID}`}>
           <ListItemIcon>
-            <PeopleIcon style={{ color: 'white' }} />
+            <PeopleIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Пользователи" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/director/reports/${userID}`}>
           <ListItemIcon>
-            <AssessmentIcon style={{ color: 'white' }} />
+            <AssessmentIcon style={{ color: '#24695C' }} />
           </ListItemIcon>
           <ListItemText primary="Отчетность" />
         </ListItemStyled>

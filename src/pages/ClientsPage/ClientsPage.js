@@ -19,10 +19,19 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Alert,
+  MenuItem,
+  Paper,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate, useParams } from "react-router-dom";
 import Menu from "../../components/verticalMenu/menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -54,12 +63,9 @@ const AppBarStyled = styled(AppBar)({
 
 const DataGridStyled = styled(DataGrid)({
   backgroundColor: "#fff",
-  "& .MuiDataGrid-root": {
-    border: "none",
-  },
   "& .MuiDataGrid-columnHeaders": {
-    backgroundColor: "#f0f0f0",
-    color: "#333",
+    backgroundColor: "#24695C",
+    color: "white",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -67,14 +73,29 @@ const DataGridStyled = styled(DataGrid)({
     color: "#333",
     borderBottom: "1px solid #ddd",
   },
-  "& .MuiDataGrid-footerContainer": {
-    backgroundColor: "#f0f0f0",
-  },
 });
+
+const DialogTitleStyled = styled(DialogTitle)({
+  textAlign: "center",
+  textTransform: "capitalize",
+  fontWeight: "bold",
+});
+
+const currencies = [
+  { value: "BYN", label: "Белорусский рубль" },
+  { value: "USD", label: "Доллар США" },
+];
+
+const accountTypes = [
+  { value: "CHECKING", label: "Текущий" },
+  { value: "SAVINGS", label: "Депозит" },
+  { value: "CREDIT", label: "Кредит" },
+  { value: "SOCIAL", label: "Социальный" },
+];
 
 const CustomToolbar = () => (
   <GridToolbarContainer>
-    <GridToolbarQuickFilter />
+    <GridToolbarQuickFilter placeholder="Поиск..." />
   </GridToolbarContainer>
 );
 
@@ -95,62 +116,90 @@ function ClientsDataGrid() {
     address: "",
     role: "CLIENT",
   });
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [open, setOpen] = useState(false);
+  const [newAccountData, setNewAccountData] = useState({
+    account_num: "",
+    account_balance: "",
+    currency: "",
+    accountType: "",
+    overdraftLimit: "",
+    interestRate: "",
+    creditLimit: "",
+    socialPayments: "",
+  });
+  const [selectedClientForEdit, setSelectedClientForEdit] = useState(null);
+  const [selectedClientForAccount, setSelectedClientForAccount] = useState(null);
+  const [openAddClientDialog, setOpenAddClientDialog] = useState(false);
+  const [openEditClientDialog, setOpenEditClientDialog] = useState(false);
+  const [openAddAccountDialog, setOpenAddAccountDialog] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     fetchClients();
-    axios
-      .get(`${apiUrl}/users/${userID}/avatar`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      })
-      .then((response) => {
-        if (response.data) {
-          setAvatarUrl(`data:image/jpeg;base64,${response.data}`);
-        }
-      })
-      .catch((error) => {
-        console.error("Ошибка загрузки аватара:", error);
-      });
   }, [userID]);
 
-  const fetchClients = () => {
-    axios
-      .get(`${apiUrl}/users/client`, {
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/users/client`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
-        withCredentials: true,
-      })
-      .then((response) => {
-        setClients(response.data);
-      })
-      .catch((error) => console.error("Ошибка загрузки клиентов:", error));
+      });
+      setClients(response.data);
+    } catch (error) {
+      console.error("Ошибка загрузки клиентов:", error);
+    }
   };
 
-  const handleDeleteSelected = () => {
-    if (selectedRows.length === 0) return;
+  const handleDeleteSelected = async () => {
+    if (selectedRows.length === 0) {
+      setError("Выберите хотя бы одного клиента для удаления.");
+      return;
+    }
 
-    selectedRows.forEach((id) => {
-      axios
-        .delete(`${apiUrl}/users/client/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        })
-        .then(() => {
-          setClients((clients) => clients.filter((client) => client.id !== id));
-        })
-        .catch((error) => console.error("Ошибка при удалении клиента:", error));
-    });
-    setSelectedRows([]);
+    try {
+      await Promise.all(
+        selectedRows.map((id) =>
+          axios.delete(`${apiUrl}/users/client/${id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          })
+        )
+      );
+      setClients((prevClients) =>
+        prevClients.filter((client) => !selectedRows.includes(client.id))
+      );
+      setSelectedRows([]);
+      setSuccess("Выбранные клиенты успешно удалены.");
+      setError("");
+    } catch (error) {
+      console.error("Ошибка при удалении клиента:", error);
+      setError("Произошла ошибка при удалении клиентов.");
+    }
   };
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      await axios.post(`${apiUrl}/createClient`, newClientData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      setSuccess("Клиент успешно добавлен.");
+      fetchClients(); 
+      handleCloseAddClient(); 
+    } catch (error) {
+      console.error("Ошибка при добавлении клиента:", error);
+      setError("Произошла ошибка при добавлении клиента.");
+    }
+  };
+  
+
+  const handleOpenAddClient = () => setOpenAddClientDialog(true);
+  const handleCloseAddClient = () => {
+    setOpenAddClientDialog(false);
     setNewClientData({
       login: "",
       password: "",
@@ -163,65 +212,149 @@ function ClientsDataGrid() {
       address: "",
       role: "CLIENT",
     });
+    setError("");
   };
 
-  const handleInputChange = (event) => {
+  const handleOpenEditClient = (client) => {
+    setSelectedClientForEdit(client);
+    setOpenEditClientDialog(true);
+  };
+
+  const handleCloseEditClient = () => {
+    setOpenEditClientDialog(false);
+    setSelectedClientForEdit(null);
+    setError("");
+  };
+
+  const handleOpenAddAccount = (client) => {
+    setSelectedClientForAccount(client);
+    setOpenAddAccountDialog(true);
+  };
+
+  const handleCloseAddAccount = () => {
+    setOpenAddAccountDialog(false);
+    setNewAccountData({
+      account_num: "",
+      account_balance: "",
+      currency: "",
+      accountType: "",
+      overdraftLimit: "",
+      interestRate: "",
+      creditLimit: "",
+      socialPayments: "",
+    });
+    setError("");
+  };
+
+  const handleClientInputChange = (event) => {
     const { name, value } = event.target;
     setNewClientData({ ...newClientData, [name]: value });
   };
 
-  const handleSubmit = (event) => {
+  const handleAccountInputChange = (event) => {
+    const { name, value } = event.target;
+    setNewAccountData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const renderAdditionalField = () => {
+    switch (newAccountData.accountType) {
+      case "CHECKING":
+        return (
+          <TextField
+            label="Лимит овердрафта"
+            name="overdraftLimit"
+            value={newAccountData.overdraftLimit}
+            onChange={handleAccountInputChange}
+            fullWidth
+            margin="normal"
+          />
+        );
+      case "SAVINGS":
+        return (
+          <TextField
+            label="Процентная ставка"
+            name="interestRate"
+            value={newAccountData.interestRate}
+            onChange={handleAccountInputChange}
+            fullWidth
+            margin="normal"
+          />
+        );
+      case "CREDIT":
+        return (
+          <TextField
+            label="Кредитный лимит"
+            name="creditLimit"
+            value={newAccountData.creditLimit}
+            onChange={handleAccountInputChange}
+            fullWidth
+            margin="normal"
+          />
+        );
+      case "SOCIAL":
+        return (
+          <TextField
+            label="Тип социальной выплаты"
+            name="socialPayments"
+            value={newAccountData.socialPayments}
+            onChange={handleAccountInputChange}
+            fullWidth
+            margin="normal"
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const handleAddAccountSubmit = async (event) => {
     event.preventDefault();
-    axios
-      .post(`${apiUrl}/auth/signUp`, newClientData, {
+    if (
+      !newAccountData.account_num ||
+      !newAccountData.account_balance ||
+      !newAccountData.currency ||
+      !newAccountData.accountType
+    ) {
+      setError("Все поля должны быть заполнены.");
+      return;
+    }
+
+    const requestData = {
+      accountType: newAccountData.accountType,
+      [`${newAccountData.accountType.toLowerCase()}AccountDto`]: {
+        accountNum: newAccountData.account_num,
+        clientId: selectedClientForAccount.id,
+        accountBalance: parseFloat(newAccountData.account_balance),
+        currency: newAccountData.currency,
+        openDate: new Date().toISOString().slice(0, 10),
+        ...(newAccountData.accountType === "CHECKING" && {
+          overdraftLimit: parseFloat(newAccountData.overdraftLimit),
+        }),
+        ...(newAccountData.accountType === "SAVINGS" && {
+          interestRate: parseFloat(newAccountData.interestRate),
+        }),
+        ...(newAccountData.accountType === "CREDIT" && {
+          creditLimit: parseFloat(newAccountData.creditLimit),
+        }),
+        ...(newAccountData.accountType === "SOCIAL" && {
+          socialPayments: newAccountData.socialPayments,
+        }),
+      },
+    };
+
+    try {
+      await axios.post(`${apiUrl}/accounts/create`, requestData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
-      })
-      .then(() => {
-        fetchClients();
-        handleClose();
-      })
-      .catch((error) => console.error("Ошибка при добавлении клиента:", error));
-  };
-
-  const handleDetailsClick = (clientId) => {
-    navigate(`/login/client/${clientId}/${userID}`);
-  };
-
-  
-  const handleEditClick = (id) => {
-    navigate(`/client/edit/${id}/${userID}`);
-  };
-
-  const handleLogout = () => {
-    axios
-      .post(
-        `${apiUrl}/auth/logout`,
-        { refresh_token: localStorage.getItem("refreshToken") },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-          withCredentials: true,
-        }
-      )
-      .then((response) => {
-        if (response.status !== 200) {
-          console.log(localStorage.getItem("refreshToken"));
-          return;
-        }
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        navigate("/");
-      })
-      .catch((error) => {
-        console.error(error);
-        console.log(localStorage.getItem("refreshToken"));
       });
+      setSuccess("Счет успешно добавлен.");
+      handleCloseAddAccount();
+    } catch (error) {
+      console.error("Ошибка при добавлении счета:", error);
+      setError("Произошла ошибка при добавлении счета.");
+    }
   };
-
 
   return (
     <>
@@ -230,21 +363,21 @@ function ClientsDataGrid() {
       <Box component="main" sx={{ flexGrow: 1, p: 3, ml: { sm: 30 } }}>
         <AppBarStyled position="fixed" sx={{ zIndex: 1201 }}>
           <Toolbar>
-            <Typography variant="h6">Клиенты</Typography>
+            <Typography variant="h5">Клиенты</Typography>
             <Box sx={{ flexGrow: 1 }} />
-            <Avatar src={avatarUrl || "/static/images/avatar/1.jpg"} />
-            <IconButton onClick={handleLogout}>
+            <Avatar src="/static/images/avatar/1.jpg" />
+            <IconButton onClick={() => navigate("/")}>
               <LogoutIcon sx={{ color: "white" }} />
             </IconButton>
           </Toolbar>
         </AppBarStyled>
         <Toolbar />
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, height: 'auto' }}>
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <MyButton
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={handleOpen}
+              onClick={handleOpenAddClient}
             >
               Добавить клиента
             </MyButton>
@@ -256,7 +389,9 @@ function ClientsDataGrid() {
               Удалить выбранные
             </DelButton>
           </Box>
-          <Box sx={{ height: 500, width: '100%' }}>
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && <Alert severity="success">{success}</Alert>}
+          <Box sx={{ height: 500, width: "100%" }}>
             <DataGridStyled
               rows={clients}
               columns={[
@@ -266,27 +401,24 @@ function ClientsDataGrid() {
                 { field: "income", headerName: "Доход", width: 100 },
                 { field: "address", headerName: "Адрес", width: 200 },
                 {
-                  field: "details",
+                  field: "actions",
                   headerName: "Действия",
                   width: 300,
                   renderCell: (params) => (
                     <>
                       <Button
                         variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={() => handleEditClick(params.row.id)}
-                        style={{ marginRight: 10 }}
+                        onClick={() => handleOpenEditClient(params.row)}
+                        sx={{ marginRight: 1, backgroundColor: "#FFA726" }}
                       >
                         Редактировать
                       </Button>
                       <Button
                         variant="contained"
-                        color="secondary"
-                        size="small"
-                        onClick={() => handleDetailsClick(params.row.id)}
+                        onClick={() => handleOpenAddAccount(params.row)}
+                        sx={{ backgroundColor: "#29B6F6" }}
                       >
-                        Подробнее
+                        Добавить счет
                       </Button>
                     </>
                   ),
@@ -299,47 +431,194 @@ function ClientsDataGrid() {
               components={{
                 Toolbar: CustomToolbar,
               }}
-              onSelectionModelChange={(ids) => setSelectedRows(ids)}
+              onRowSelectionModelChange={(ids) => setSelectedRows(ids)}
             />
           </Box>
         </Container>
       </Box>
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>Добавить нового клиента</DialogTitle>
+
+      {/* Модальное окно добавления клиента */}
+      <Dialog
+        open={openAddClientDialog}
+        onClose={handleCloseAddClient}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitleStyled>Добавить нового клиента</DialogTitleStyled>
         <DialogContent>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
             {[
-              "login",
-              "password",
-              "email",
-              "firstName",
-              "secondName",
-              "patronymicName",
-              "income",
-              "mobilePhone",
-              "address",
-            ].map((field) => (
+              { name: "login", label: "Логин" },
+              { name: "password", label: "Пароль" },
+              { name: "email", label: "Email" },
+              { name: "firstName", label: "Имя" },
+              { name: "secondName", label: "Фамилия" },
+              { name: "patronymicName", label: "Отчество" },
+              { name: "income", label: "Доход" },
+              { name: "mobilePhone", label: "Телефон" },
+              { name: "address", label: "Адрес" },
+            ].map(({ name, label }) => (
               <TextField
-                key={field}
-                label={field.charAt(0).toUpperCase() + field.slice(1)}
-                name={field}
-                value={newClientData[field]}
-                onChange={handleInputChange}
+                key={name}
+                label={label}
+                name={name}
+                value={newClientData[name]}
+                onChange={handleClientInputChange}
                 fullWidth
                 margin="normal"
               />
             ))}
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions
+          sx={{
+            justifyContent: "center",
+          }}
+        >
           <MyButton onClick={handleSubmit} variant="contained">
             Сохранить
           </MyButton>
-          <Button onClick={handleClose} color="secondary">
-            Отмена
-          </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Модальное окно редактирования клиента */}
+      {selectedClientForEdit && (
+        <Dialog
+          open={openEditClientDialog}
+          onClose={handleCloseEditClient}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitleStyled>Редактировать клиента</DialogTitleStyled>
+          <DialogContent>
+            {[
+              { name: "email", label: "Email" },
+              { name: "firstName", label: "Имя" },
+              { name: "secondName", label: "Фамилия" },
+              { name: "income", label: "Доход" },
+              { name: "mobilePhone", label: "Телефон" },
+              { name: "address", label: "Адрес" },
+            ].map(({ name, label }) => (
+              <TextField
+                key={name}
+                label={label}
+                name={name}
+                value={selectedClientForEdit[name] || ""}
+                onChange={(e) =>
+                  setSelectedClientForEdit((prev) => ({
+                    ...prev,
+                    [name]: e.target.value,
+                  }))
+                }
+                fullWidth
+                margin="normal"
+              />
+            ))}
+          </DialogContent>
+          <DialogActions
+            sx={{
+              justifyContent: "center",
+            }}
+          >
+            <MyButton
+              onClick={() => {
+                axios
+                  .put(
+                    `${apiUrl}/users/client/${selectedClientForEdit.id}`,
+                    selectedClientForEdit,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                          "accessToken"
+                        )}`,
+                      },
+                    }
+                  )
+                  .then(() => {
+                    setSuccess("Клиент успешно обновлен.");
+                    fetchClients();
+                    handleCloseEditClient();
+                  })
+                  .catch((error) => {
+                    console.error("Ошибка при обновлении клиента:", error);
+                    setError("Произошла ошибка при обновлении клиента.");
+                  });
+              }}
+              variant="contained"
+            >
+              Сохранить изменения
+            </MyButton>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {/* Модальное окно добавления счета */}
+      {selectedClientForAccount && (
+        <Dialog
+          open={openAddAccountDialog}
+          onClose={handleCloseAddAccount}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitleStyled>Добавить счет</DialogTitleStyled>
+          <DialogContent>
+            <TextField
+              label="Номер счета"
+              name="account_num"
+              value={newAccountData.account_num}
+              onChange={handleAccountInputChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Баланс"
+              name="account_balance"
+              value={newAccountData.account_balance}
+              onChange={handleAccountInputChange}
+              fullWidth
+              margin="normal"
+            />
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Валюта</InputLabel>
+              <Select
+                name="currency"
+                value={newAccountData.currency}
+                onChange={handleAccountInputChange}
+              >
+                {currencies.map((currency) => (
+                  <MenuItem key={currency.value} value={currency.value}>
+                    {currency.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Тип счета</InputLabel>
+              <Select
+                name="accountType"
+                value={newAccountData.accountType}
+                onChange={handleAccountInputChange}
+              >
+                {accountTypes.map((type) => (
+                  <MenuItem key={type.value} value={type.value}>
+                    {type.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {renderAdditionalField()}
+          </DialogContent>
+          <DialogActions
+            sx={{
+              justifyContent: "center",
+            }}
+          >
+            <MyButton onClick={handleAddAccountSubmit} variant="contained">
+              Сохранить счет
+            </MyButton>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   );
 }

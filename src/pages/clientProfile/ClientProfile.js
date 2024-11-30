@@ -16,11 +16,15 @@ import {
   Input,
   Divider,
   Button,
+  Tooltip,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import ClientMenu from "../../components/verticalMenu/ClientMenu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import axios from "axios";
+import USFlag from "../../images/usa-flag.png";
+import EURFlag from "../../images/eu-flag.png";
+import GBPFlag from "../../images/gb-flag.png";
 
 const apiUrl = "http://localhost:8080/api";
 
@@ -99,6 +103,7 @@ const ClientProfilePage = () => {
     GBP: null,
   });
 
+  // Загрузка данных профиля и счетов
   useEffect(() => {
     axios
       .get(`${apiUrl}/users/client/${userID}`, {
@@ -124,6 +129,7 @@ const ClientProfilePage = () => {
         setLoading(false);
       });
 
+    // Запрос счетов пользователя
     axios
       .get(`${apiUrl}/accounts/by-user/${userID}`, {
         headers: {
@@ -138,6 +144,7 @@ const ClientProfilePage = () => {
         console.error("Ошибка загрузки данных счетов:", error);
       });
 
+    // Запрос курсов валют
     const fetchExchangeRates = async () => {
       try {
         const response = await axios.get("https://api.nbrb.by/exrates/rates?periodicity=0");
@@ -153,6 +160,8 @@ const ClientProfilePage = () => {
     };
 
     fetchExchangeRates();
+
+    // Загрузка аватара пользователя
     axios
       .get(`${apiUrl}/users/${userID}/avatar`, {
         headers: {
@@ -222,6 +231,10 @@ const ClientProfilePage = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleViewTransactions = (accountID) => {
+    navigate(`/clAccs/${accountID}/${userID}`);
+  };
+
   if (loading) {
     return <CircularProgress />;
   }
@@ -238,7 +251,6 @@ const ClientProfilePage = () => {
     role,
     address,
     mobilePhone,
-    income,
   } = userData;
 
   return (
@@ -254,7 +266,7 @@ const ClientProfilePage = () => {
           }}
         >
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Typography variant="h6" noWrap>
+            <Typography variant="h5" noWrap>
               FinanceScope
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -283,51 +295,64 @@ const ClientProfilePage = () => {
             <Typography variant="h5" sx={{ color: "#24695C", fontWeight: "bold" }}>
               {secondName} {firstName} {patronymicName}
             </Typography>
-            <ProfileCard>
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Typography variant="body1"><strong>Email:</strong> {email}</Typography>
-                    <Typography variant="body1"><strong>Адрес:</strong> {address}</Typography>
-                    <Typography variant="body1"><strong>Телефон:</strong> {mobilePhone}</Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body1"><strong>Доход:</strong> {income}</Typography>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </ProfileCard>
-          </ProfileContainer>
-          <Grid container spacing={3} mt={2}>
-            <Grid item xs={12} sm={6} md={4}>
-              <AccountCard>
-                <CardContent>
-                  <Typography variant="h6">Счета</Typography>
-                  {accountData.map((account) => (
-                    <Box key={account.id} mb={1}>
-                      <Typography variant="body1"><strong>{account.accountType}</strong></Typography>
-                      <Typography variant="body2" color="textSecondary">Номер счета: {account.accountNum}</Typography>
-                      <Typography variant="body2" color="textSecondary">Баланс: {account.accountBalance} BYN</Typography>
-                      <StyledButton>Посмотреть транзакции</StyledButton>
-                    </Box>
-                  ))}
-                </CardContent>
-              </AccountCard>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <AccountCard>
-                <CardContent>
-                  <Typography variant="h6">Курсы валют</Typography>
-                  <Box mt={1} mb={1}>
-                    <Typography variant="body2">USD: <CurrencyText>{exchangeRates.USD} BYN</CurrencyText></Typography>
-                    <Typography variant="body2">EUR: <CurrencyText>{exchangeRates.EUR} BYN</CurrencyText></Typography>
-                    <Typography variant="body2">GBP: <CurrencyText>{exchangeRates.GBP} BYN</CurrencyText></Typography>
+            <Typography variant="body2" sx={{ marginTop: 1 }}>
+              Роль: {role}
+            </Typography>
+            <Typography variant="body2">Email: {email}</Typography>
+            <Typography variant="body2">Телефон: {mobilePhone}</Typography>
+            <Typography variant="body2">Адрес: {address}</Typography>
+
+            <Divider sx={{ marginY: 2 }} />
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h5" sx={{ fontWeight: "bold", marginBottom: 4, textAlign:"center" }}>
+                  Курсы валют:
+                </Typography>
+                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}>
+                    <img src={USFlag} alt="USD" style={{ width: 20, marginRight: 5 }} />
+                    <Typography variant="body2">USD: {exchangeRates.USD}</Typography>
                   </Box>
-                </CardContent>
-              </AccountCard>
-            </Grid>
-          </Grid>
-  
+                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}>
+                    <img src={EURFlag} alt="EUR" style={{ width: 20, marginRight: 5 }} />
+                    <Typography variant="body2">EUR: {exchangeRates.EUR}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}>
+                    <img src={GBPFlag} alt="GBP" style={{ width: 20, marginRight: 5 }} />
+                    <Typography variant="body2">GBP: {exchangeRates.GBP}</Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h5" sx={{ fontWeight: "bold", marginBottom: 4, textAlign:"center" }}>
+                  Ваши счета:
+                </Typography>
+                <Grid container spacing={2}>
+                  {accountData.map((account) => (
+                    <Grid item xs={12} md={6} key={account.accountNum}>
+                      <AccountCard>
+                        <CardContent>
+                          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                            {account.accountType}
+                          </Typography>
+                          <CurrencyText>
+                            {account.currency} {account.accountBalance?.toFixed(2) || "0.00"}
+                          </CurrencyText>
+                          <Typography variant="body2" sx={{ color: "#555" }}>
+                            Номер счета: {account.accountNum}
+                          </Typography>
+                          <StyledButton onClick={() => handleViewTransactions(account.accountNum)}>
+                            Просмотр транзакций
+                          </StyledButton>
+                        </CardContent>
+                      </AccountCard>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            </Box>
+          </ProfileContainer>
         </Container>
       </Box>
     </Box>

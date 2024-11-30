@@ -244,8 +244,8 @@ const AccountTransactionsPage = () => {
         const currentDate = new Date();
         currentDate.setHours(currentDate.getHours() + 3);
         return currentDate.toISOString();
-    })(),
-      };
+      })(),
+    };
     if (transactionType === "TRANSFER") {
       transactionData.recipientAccountId = recipientAccountId;
     }
@@ -267,10 +267,10 @@ const AccountTransactionsPage = () => {
         amount: "",
         transactionType: "withdrawal",
         currency: "BYN",
-        transactionTime: ""
+        transactionTime: "",
       });
-      console.log(response.data.transactionTime)
-       await generateReceipt(response.data.id);
+      console.log(response.data.transactionTime);
+      await generateReceipt(response.data.id);
       window.location.reload();
     } catch (error) {
       if (error.response && error.response.status === 400) {
@@ -289,17 +289,17 @@ const AccountTransactionsPage = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
-          responseType: 'blob',  
+          responseType: "blob",
         }
       );
-    
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", `receipt_${transactionId}.pdf`);
       document.body.appendChild(link);
       link.click();
-            link.remove();
+      link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
       handleRequestError(error, navigate);
@@ -341,32 +341,33 @@ const AccountTransactionsPage = () => {
   };
 
   const handleLogout = () => {
-    axios.post(
-      'http://localhost:8080/api/auth/logout',
-      {
-        refresh_token: localStorage.getItem('refreshToken'),
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+    axios
+      .post(
+        "http://localhost:8080/api/auth/logout",
+        {
+          refresh_token: localStorage.getItem("refreshToken"),
         },
-        withCredentials: true
-      }
-    )
-    .then(response => {
-      if (response.status !== 200) {
-        console.log(localStorage.getItem('refreshToken'));
-        return;
-      }
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      navigate('/');
-    })
-    .catch(error => {
-      console.error(error);
-      console.log(localStorage.getItem('refreshToken'));
-    });
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          withCredentials: true,
+        }
+      )
+      .then((response) => {
+        if (response.status !== 200) {
+          console.log(localStorage.getItem("refreshToken"));
+          return;
+        }
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        navigate("/");
+      })
+      .catch((error) => {
+        console.error(error);
+        console.log(localStorage.getItem("refreshToken"));
+      });
   };
 
   const handleSearchChange = (event) => {
@@ -391,11 +392,14 @@ const AccountTransactionsPage = () => {
     <MenuContainer>
       <CssBaseline />
       <ClientMenu userID={userID} />
-      <AppBarStyled position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+      <AppBarStyled
+        position="fixed"
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <TitleTypography variant="h6" noWrap component="div">
+          <Typography variant="h5" noWrap component="div">
             Транзакции
-          </TitleTypography>
+          </Typography>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <HeaderAvatar
               alt="Avatar"
@@ -418,17 +422,28 @@ const AccountTransactionsPage = () => {
         <Toolbar />
         <ContentContainer>
           <FormContainer elevation={3}>
-            <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
+            <Box
+              sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}
+            >
               <IconButton onClick={handleBack} sx={{ color: "#24695C" }}>
                 <ArrowBackIcon />
               </IconButton>
-              <Typography variant="h6" sx={{ flexGrow: 1, color: "#24695C", fontWeight: "bold" }}>
+              <Typography
+                variant="h6"
+                sx={{ flexGrow: 1, color: "#24695C", fontWeight: "bold" }}
+              >
                 Назад
               </Typography>
             </Box>
+
             {accountInfo && (
               <Box marginBottom={3}>
-                <Typography variant="h5" gutterBottom align="center" style={{ color: "#24695C", fontWeight: "bold" }}>
+                <Typography
+                  variant="h5"
+                  gutterBottom
+                  align="center"
+                  style={{ color: "#24695C", fontWeight: "bold" }}
+                >
                   Информация о счете {accountID}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
@@ -438,15 +453,38 @@ const AccountTransactionsPage = () => {
                   Тип счета: {accountInfo.accountType}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  Баланс: {convertedBalance ? convertedBalance.toFixed(2) : accountInfo.accountBalance} {selectedCurrency}
+                  Баланс:{" "}
+                  {convertedBalance
+                    ? convertedBalance.toFixed(2)
+                    : accountInfo.accountBalance}{" "}
+                  {selectedCurrency}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
                   Дата открытия: {accountInfo.openDate}
                 </Typography>
                 {renderAdditionalAccountInfo()}
+                <FormControl variant="outlined" margin="normal" fullWidth>
+                  <InputLabel>Валюта</InputLabel>
+                  <Select
+                    value={selectedCurrency}
+                    onChange={handleCurrencyChange}
+                    label="Валюта"
+                  >
+                    <MenuItem value="USD">USD</MenuItem>
+                    <MenuItem value="EUR">EUR</MenuItem>
+                    <MenuItem value="RUB">RUB</MenuItem>
+                    <MenuItem value="CNY">CNY</MenuItem>
+                    <MenuItem value="BYN">BYN</MenuItem>
+                  </Select>
+                </FormControl>
                 <Divider sx={{ marginY: 3 }} />
                 <Box marginTop={3}>
-                  <Typography variant="h5" gutterBottom align="center" style={{ color: "#24695C", fontWeight: "bold" }}>
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    align="center"
+                    style={{ color: "#24695C", fontWeight: "bold" }}
+                  >
                     Добавить транзакцию
                   </Typography>
                   <FormControl variant="outlined" margin="normal" fullWidth>
@@ -509,25 +547,16 @@ const AccountTransactionsPage = () => {
                     Добавить транзакцию
                   </CustomButton>
                 </Box>
-                <FormControl variant="outlined" margin="normal" fullWidth>
-                  <InputLabel>Валюта</InputLabel>
-                  <Select
-                    value={selectedCurrency}
-                    onChange={handleCurrencyChange}
-                    label="Валюта"
-                  >
-                    <MenuItem value="USD">USD</MenuItem>
-                    <MenuItem value="EUR">EUR</MenuItem>
-                    <MenuItem value="RUB">RUB</MenuItem>
-                    <MenuItem value="CNY">CNY</MenuItem>
-                    <MenuItem value="BYN">BYN</MenuItem>
-                  </Select>
-                </FormControl>
               </Box>
             )}
           </FormContainer>
           <FormContainer elevation={3} sx={{ marginTop: 4 }}>
-            <Typography variant="h5" gutterBottom align="center" style={{ color: "#24695C", fontWeight: "bold" }}>
+            <Typography
+              variant="h5"
+              gutterBottom
+              align="center"
+              style={{ color: "#24695C", fontWeight: "bold" }}
+            >
               Транзакции счета {accountID}
             </Typography>
             <SearchContainer>
@@ -585,13 +614,19 @@ const AccountTransactionsPage = () => {
                   {filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>
-                        {new Date(transaction.transactionTime).toLocaleString("ru-BY", { timeZone: "Europe/Minsk" })}
+                        {new Date(transaction.transactionTime).toLocaleString(
+                          "ru-BY",
+                          { timeZone: "Europe/Minsk" }
+                        )}
                       </TableCell>
                       <TableCell>{transaction.transactionType}</TableCell>
                       <TableCell>{transaction.amount}</TableCell>
                       <TableCell>{transaction.currency}</TableCell>
                       <TableCell>
-                        <CustomButton variant="contained" onClick={() => generateReceipt(transaction.id)}>
+                        <CustomButton
+                          variant="contained"
+                          onClick={() => generateReceipt(transaction.id)}
+                        >
                           Скачать чек
                         </CustomButton>
                       </TableCell>

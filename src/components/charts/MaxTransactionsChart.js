@@ -24,17 +24,17 @@ const MaxTransactionsChart = () => {
       {
         label: 'Максимальный перевод',
         data: [],
-        backgroundColor: '#a29bfe',
+        backgroundColor: '#8BC34A',
       },
       {
         label: 'Максимальное снятие',
         data: [],
-        backgroundColor: '#6c5ce7',
+        backgroundColor: '#4CAF50',
       },
       {
         label: 'Максимальное начисление',
         data: [],
-        backgroundColor: '#341f97',
+        backgroundColor: '#388E3C',
       },
     ],
   });

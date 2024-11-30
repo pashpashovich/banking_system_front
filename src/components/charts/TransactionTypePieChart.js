@@ -4,7 +4,7 @@ import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Box, Button, TextField, Container } from "@mui/material";
 import axios from "axios";
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { styled } from "@mui/system";
 
 const MyButton = styled(Button)({
@@ -116,16 +116,23 @@ const TransactionTypePieChart = () => {
               renderInput={(params) => <TextField {...params} fullWidth />}
             />
           </LocalizationProvider>
-          <MyButton
-            variant="contained"
-            onClick={fetchTransactionCounts}
+          <Box
             sx={{
-              height: "56px",
-              alignSelf: "flex-end",
+              display: "flex",
+              justifyContent: "center",
+              width: "100%", 
             }}
           >
-            Применить
-          </MyButton>
+            <MyButton
+              variant="contained"
+              onClick={fetchTransactionCounts}
+              sx={{
+                height: "56px",
+              }}
+            >
+              Применить
+            </MyButton>
+          </Box>
         </Box>
         <Box
           sx={{

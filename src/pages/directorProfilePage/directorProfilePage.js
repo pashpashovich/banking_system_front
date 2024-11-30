@@ -186,7 +186,7 @@ const DirectorProfile = () => {
           }}
         >
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Typography variant="h6" noWrap component="div">
+            <Typography variant="h5" noWrap component="div">
               Профиль директора
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center" }}>

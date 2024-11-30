@@ -12,6 +12,7 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import styles from "./resetPassword.module.css";
 
 function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -68,7 +69,7 @@ function ResetPasswordPage() {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:8080/api/auth/confirm-reset", 
+        "http://localhost:8080/api/auth/confirm-reset",
         {
           token,
           newPassword: password,
@@ -93,22 +94,22 @@ function ResetPasswordPage() {
   };
 
   return (
-    <div className="reset-password-container">
-      <Paper elevation={3} className="reset-password-paper">
+    <div className={styles["reset-password-container"]}>
+      <Paper elevation={3} className={styles["reset-password-paper"]}>
         <Typography
           variant="h5"
           component="h1"
-          className="reset-password-title"
+          className={styles["reset-password-title"]}
         >
           Сброс пароля
         </Typography>
         {error && (
-          <Alert severity="error" className="reset-password-alert">
+          <Alert severity="error" className={styles["reset-password-alert"]}>
             {error}
           </Alert>
         )}
         {success && (
-          <Alert severity="success" className="reset-password-alert">
+          <Alert severity="success" className={styles["reset-password-alert"]}>
             {success}
           </Alert>
         )}
@@ -118,7 +119,7 @@ function ResetPasswordPage() {
             label="Новый пароль"
             type={showPassword ? "text" : "password"}
             fullWidth
-            className="reset-password-field"
+            className={styles["reset-password-field"]}
             value={password}
             onChange={handlePasswordChange}
             InputProps={{
@@ -143,7 +144,7 @@ function ResetPasswordPage() {
             label="Подтвердите пароль"
             type={showConfirmPassword ? "text" : "password"}
             fullWidth
-            className="reset-password-field"
+            className={styles["reset-password-field"]}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             InputProps={{
@@ -161,17 +162,11 @@ function ResetPasswordPage() {
               ),
             }}
           />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: "16px",
-            }}
-          >
-          <Button
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
+            <Button
               type="submit"
               variant="contained"
-              className="reset-password-button"
+              className={styles["reset-password-button"]}
               disabled={loading}
             >
               {loading ? (

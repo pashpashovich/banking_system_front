@@ -6,7 +6,7 @@ import CardComparison from '../../components/cardComparison/CardComparison';
 import SavingsProcess from '../../components/savingsProcess/SavingsProcess';
 import BankFeatures from '../../components/bankFeatures/BankFeatures';
 import Footer from '../../components/footer/footer';
-import myImage from '../../images/main_pic.png';
+import myImage from '../../images/main_pic.jpg';
 
 const MainPageUser = () => {
   return (

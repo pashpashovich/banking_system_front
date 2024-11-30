@@ -148,7 +148,7 @@ const Analytics = () => {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <AppBar style={{ background: '#030E32' }} position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="h6" noWrap component="div">Графики</Typography>
+            <Typography variant="h5" noWrap component="div">Графики</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <HeaderAvatar alt="avatar" src={avatarUrl || "/static/images/avatar/1.jpg"} />
               <IconButton onClick={handleLogout}>

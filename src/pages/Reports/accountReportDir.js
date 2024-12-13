@@ -120,6 +120,19 @@ function CustomToolbar() {
   );
 }
 
+const translateOperation = (operation) => {
+  switch (operation) {
+    case "DEPOSIT":
+      return "Начисление";
+    case "TRANSFER":
+      return "Перевод";
+    case "WITHDRAWAL":
+      return "Снятие";
+    default:
+      return "Неизвестно";
+  }
+};
+
 const TransactionsReport = () => {
   const { userID } = useParams();
   const navigate = useNavigate();
@@ -149,10 +162,26 @@ const TransactionsReport = () => {
       field: "transactionTime",
       headerName: "Дата",
       width: 220,
-      valueGetter: (params) => new Date(params.row.transactionTime),
+      valueGetter: (params) => {
+        const date = new Date(params.row.transactionTime);
+        return date.toLocaleString("ru-RU", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+      },
     },
-    { field: "transactionType", headerName: "Тип", width: 130 },
+    {
+      field: "transactionType",
+      headerName: "Тип",
+      width: 130,
+      valueGetter: (params) => translateOperation(params.row.transactionType),
+    },
   ];
+  
 
   useEffect(() => {
     axios

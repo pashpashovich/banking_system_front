@@ -163,6 +163,17 @@ const UserManagementPage = () => {
     setDialogOpen(false);
   };
 
+  const translateRole = (role) => {
+    switch (role) {
+      case "CLIENT":
+        return "Клиент";
+      case "ADMIN":
+        return "Администратор";
+      default:
+        return "Неизвестно";
+    }
+  };
+
   const handleSaveChanges = async () => {
     try {
       const { changeRole, role } = selectedUser;
@@ -328,7 +339,7 @@ const UserManagementPage = () => {
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.firstName}</TableCell>
                       <TableCell>{user.secondName}</TableCell>
-                      <TableCell>{user.role}</TableCell>
+                      <TableCell>{translateRole(user.role)}</TableCell>
                       <TableCell>
                         {user.active ? "Активен" : "Заблокирован"}
                       </TableCell>

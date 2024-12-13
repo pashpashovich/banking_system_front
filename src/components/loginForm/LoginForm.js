@@ -100,9 +100,7 @@ function LoginForm() {
       </Typography>
 
       <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off" sx={{ mt: 3 }}>
-        <Typography variant="subtitle2" sx={{ color: '#24695C' }}>
-        Введите ваш логин
-        </Typography>
+    
         <TextField
           label="Логин"
           variant="outlined"
@@ -112,10 +110,6 @@ function LoginForm() {
           InputLabelProps={{ style: { color: '#24695C' } }}
           onChange={(e) => setLogin(e.target.value)}
         />
-
-        <Typography variant="subtitle2" sx={{ color: '#24695C', mt: 2 }}>
-          Введите Ваш пароль
-        </Typography>
         <TextField
           label="Пароль"
           type={showPassword ? 'text' : 'password'}

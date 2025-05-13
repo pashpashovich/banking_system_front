@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, AppBar, Avatar, Toolbar, IconButton, Typography, CssBaseline, MenuItem, Select, FormControl, InputLabel, Container } from '@mui/material';
 import { styled } from '@mui/system';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
 import Menu from '../../components/verticalMenu/menu';
 import AccountDistributionChart from '../../components/charts/accTypes';
@@ -118,7 +117,7 @@ const Analytics = () => {
       case 'transactionTypePieChart':
         return <TransactionTypePieChart />;
       default:
-        return <Typography variant="h6">Пожалуйста, выберите тип графика</Typography>;
+        return <Typography variant="h8">Пожалуйста, выберите тип графика</Typography>;
     }
   };
 

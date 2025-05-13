@@ -20,9 +20,6 @@ import ResetPasswordPage from "./pages/ResetPass/ResetPasswordPage";
 
 
 
-
-
-
 function App() {
   return (
     <div>

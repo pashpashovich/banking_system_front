@@ -13,6 +13,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import styles from "./resetPassword.module.css";
+import { Box } from "@mui/material";
 
 function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -114,8 +115,16 @@ function ResetPasswordPage() {
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <TextField
+<Box
+  component="form"
+  onSubmit={handleSubmit}
+  noValidate
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+  }}
+>          <TextField
             label="Новый пароль"
             type={showPassword ? "text" : "password"}
             fullWidth
@@ -176,7 +185,7 @@ function ResetPasswordPage() {
               )}
             </Button>
           </div>
-        </form>
+        </Box>
       </Paper>
     </div>
   );

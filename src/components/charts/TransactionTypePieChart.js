@@ -45,15 +45,26 @@ const TransactionTypePieChart = () => {
     },
   });
 
+  const translateLabel = (label) => {
+    switch (label) {
+      case 'DEPOSIT':
+        return 'Начисление';
+      case 'WITHDRAWAL':
+        return 'Снятие';
+      case 'TRANSFER':
+        return 'Перевод';
+      default:
+        return label;
+    }
+  };
+
   const fetchTransactionCounts = () => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
     axios
       .get(
-        `${apiUrl}?start_date=${start.toISOString().split("T")[0]}&end_date=${
-          end.toISOString().split("T")[0]
-        }`,
+        `${apiUrl}?start_date=${start.toISOString().split("T")[0]}&end_date=${end.toISOString().split("T")[0]}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -62,12 +73,15 @@ const TransactionTypePieChart = () => {
       )
       .then((response) => {
         const data = response.data;
+        const labels = Object.keys(data).map(translateLabel);
+        const values = Object.values(data);
+
         setChartData({
-          labels: Object.keys(data),
+          labels: labels,
           datasets: [
             {
               ...chartData.datasets[0],
-              data: Object.values(data),
+              data: values,
             },
           ],
         });

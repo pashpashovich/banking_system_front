@@ -15,8 +15,7 @@ import {
   CssBaseline,
   Input,
   Divider,
-  Button,
-  Tooltip,
+  Button
 } from "@mui/material";
 import { styled } from "@mui/system";
 import ClientMenu from "../../components/verticalMenu/ClientMenu";
@@ -103,7 +102,6 @@ const ClientProfilePage = () => {
     GBP: null,
   });
 
-  // Загрузка данных профиля и счетов
   useEffect(() => {
     axios
       .get(`${apiUrl}/users/client/${userID}`, {
@@ -129,7 +127,6 @@ const ClientProfilePage = () => {
         setLoading(false);
       });
 
-    // Запрос счетов пользователя
     axios
       .get(`${apiUrl}/accounts/by-user/${userID}`, {
         headers: {
@@ -144,7 +141,6 @@ const ClientProfilePage = () => {
         console.error("Ошибка загрузки данных счетов:", error);
       });
 
-    // Запрос курсов валют
     const fetchExchangeRates = async () => {
       try {
         const response = await axios.get("https://api.nbrb.by/exrates/rates?periodicity=0");
@@ -161,7 +157,6 @@ const ClientProfilePage = () => {
 
     fetchExchangeRates();
 
-    // Загрузка аватара пользователя
     axios
       .get(`${apiUrl}/users/${userID}/avatar`, {
         headers: {
@@ -177,6 +172,34 @@ const ClientProfilePage = () => {
         console.error("Ошибка загрузки аватара:", error);
       });
   }, [userID, navigate]);
+
+  const translateAccountType = (role) => {
+    switch (role) {
+      case "CREDIT":
+        return "КРЕДИТНЫЙ";
+      case "SAVINGS":
+        return "СБЕРЕГАТЕЛЬНЫЙ";
+      case "CHECKING":
+        return "ТЕКУЩИЙ" ;
+      case "SOCIAL":
+        return "СОЦИАЛЬНЫЙ";
+      default:
+        return "Неизвестно";
+    }
+  };
+
+  const translateRoleType = (role) => {
+    switch (role) {
+      case "DIRECTOR":
+        return "Директор";
+      case "CLIENT":
+        return "Клиент";
+      case "ADMIN":
+        return "Администратор" ;
+      default:
+        return "Неизвестно";
+    }
+  };
 
   const handleLogout = () => {
     axios
@@ -296,7 +319,7 @@ const ClientProfilePage = () => {
               {secondName} {firstName} {patronymicName}
             </Typography>
             <Typography variant="body2" sx={{ marginTop: 1 }}>
-              Роль: {role}
+              Роль: {translateRoleType(role)}
             </Typography>
             <Typography variant="body2">Email: {email}</Typography>
             <Typography variant="body2">Телефон: {mobilePhone}</Typography>
@@ -330,11 +353,11 @@ const ClientProfilePage = () => {
                 </Typography>
                 <Grid container spacing={2}>
                   {accountData.map((account) => (
-                    <Grid item xs={12} md={6} key={account.accountNum}>
-                      <AccountCard>
+                    <Grid item xs={12} md={accountData.length > 1 ? 6 : 12}>
+                    <AccountCard>
                         <CardContent>
                           <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                            {account.accountType}
+                            {translateAccountType(account.accountType)}
                           </Typography>
                           <CurrencyText>
                             {account.currency} {account.accountBalance?.toFixed(2) || "0.00"}
@@ -343,7 +366,7 @@ const ClientProfilePage = () => {
                             Номер счета: {account.accountNum}
                           </Typography>
                           <StyledButton onClick={() => handleViewTransactions(account.accountNum)}>
-                            Просмотр транзакций
+                            Транзакционная активность
                           </StyledButton>
                         </CardContent>
                       </AccountCard>

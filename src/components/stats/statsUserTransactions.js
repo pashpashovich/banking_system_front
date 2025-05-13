@@ -48,10 +48,10 @@ const TransactionStats = ({ data, selectedMonthName, displayDate }) => {
   return (
     <StyledPaper elevation={3}>
       <Typography variant="h6" align="center" gutterBottom style={{ color: '#24695C', fontWeight: 'bold' }}>
-        Ваш отчет за {selectedMonthName} 2024
+        Ваш отчет за {selectedMonthName} {new Date().getFullYear()}
       </Typography>
       <Typography variant="subtitle1" align="center" gutterBottom>
-        Транзакции за {displayDate} {selectedMonthName} 2024
+        Транзакции за {displayDate} {selectedMonthName} {new Date().getFullYear()}
       </Typography>
 
       <SectionTitle variant="h6">Общая сумма транзакций</SectionTitle>

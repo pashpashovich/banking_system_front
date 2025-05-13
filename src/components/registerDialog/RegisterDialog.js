@@ -11,8 +11,14 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import InputAdornment from "@mui/material/InputAdornment";
 
 function RegisterDialog({ open, onClose }) {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((prev) => !prev);
+
   const [formData, setFormData] = useState({
     login: "",
     email: "",
@@ -68,7 +74,7 @@ function RegisterDialog({ open, onClose }) {
       return false;
     }
 
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password)) {
       setErrorMessage(
         "Пароль должен содержать не менее 8 символов, одну заглавную букву и одну цифру."
@@ -156,13 +162,27 @@ function RegisterDialog({ open, onClose }) {
         <TextField
           label="Пароль"
           name="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           variant="outlined"
           fullWidth
           margin="dense"
           value={formData.password}
           onChange={handleChange}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleClickShowPassword}
+                  edge="end"
+                >
+                  {showPassword ? <Visibility /> : <VisibilityOff />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
+
         <TextField
           label="Имя"
           name="firstName"

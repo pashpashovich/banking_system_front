@@ -107,6 +107,34 @@ const handleRequestError = (error, navigate) => {
   }
 };
 
+const translateAccountType = (role) => {
+  switch (role) {
+    case "CREDIT":
+      return "КРЕДИТНЫЙ";
+    case "SAVINGS":
+      return "СБЕРЕГАТЕЛЬНЫЙ";
+    case "CHECKING":
+      return "ТЕКУЩИЙ" ;
+    case "SOCIAL":
+      return "СОЦИАЛЬНЫЙ";
+    default:
+      return "Неизвестно";
+  }
+};
+
+const translateTransactionType = (role) => {
+  switch (role) {
+    case "TRANSFER":
+      return "Перевод";
+    case "WITHDRAWAL":
+      return "Снятие";
+    case "DEPOSIT":
+      return "Начисление" ;
+    default:
+      return "Неизвестно";
+  }
+};
+
 const AccountTransactionsPage = () => {
   const { userID, accountID } = useParams();
   const [avatarUrl, setAvatarUrl] = useState(null);
@@ -450,7 +478,7 @@ const AccountTransactionsPage = () => {
                   Номер счета: {accountInfo.accountNum}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  Тип счета: {accountInfo.accountType}
+                  Тип счета: {translateAccountType(accountInfo.accountType)}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
                   Баланс:{" "}
@@ -619,7 +647,7 @@ const AccountTransactionsPage = () => {
                           { timeZone: "Europe/Minsk" }
                         )}
                       </TableCell>
-                      <TableCell>{transaction.transactionType}</TableCell>
+                      <TableCell>{translateTransactionType(transaction.transactionType)}</TableCell>
                       <TableCell>{transaction.amount}</TableCell>
                       <TableCell>{transaction.currency}</TableCell>
                       <TableCell>

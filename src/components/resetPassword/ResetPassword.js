@@ -1,5 +1,4 @@
-// ResetPasswordDialog.js
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -24,7 +23,7 @@ function ResetPasswordDialog({ open, onClose }) {
     setErrorMessage("");
     setSuccessMessage("");
     try {
-      await axios.post(`http://localhost:8080/api/auth/reset-password?email=${encodeURIComponent(email)}`);
+      await axios.post(`http://localhost:8080/api/auth/reset-password?email=${email}`);
       setSuccessMessage("Ссылка для сброса пароля была отправлена на ваш email.");
       setEmail("");
     } catch (error) {

@@ -12,6 +12,21 @@ const MenuContainer = styled(Box)({
   display: 'flex',
 });
 
+const translateAccountType = (role) => {
+  switch (role) {
+    case "CREDIT":
+      return "КРЕДИТНЫЙ";
+    case "SAVINGS":
+      return "СБЕРЕГАТЕЛЬНЫЙ";
+    case "CHECKING":
+      return "ТЕКУЩИЙ" ;
+    case "SOCIAL":
+      return "СОЦИАЛЬНЫЙ";
+    default:
+      return "Неизвестно";
+  }
+};
+
 const ContentContainer = styled(Box)({
   flexGrow: 1,
   display: 'flex',
@@ -153,7 +168,7 @@ const ClientAccsPage = () => {
                 <Box key={account.accountNum}>
                   <StyledListItem>
                     <ListItemText
-                      primary={<Typography variant="h6" style={{ color: '#333' }}>{account.accountType || 'Неизвестный тип'}</Typography>}
+                      primary={<Typography variant="h6" style={{ color: '#333' }}>{translateAccountType(account.accountType) || 'Неизвестный тип'}</Typography>}
                       secondary={
                         <Typography variant="body2" style={{ color: '#666' }}>
                           Баланс: {account.accountBalance} {account.currency}

@@ -86,7 +86,7 @@ const ClientMenu = ({ userID }) => {
       <Divider />
       <Box sx={{ p: 2, textAlign: 'center' }}>
         <Typography variant="body2" color="textSecondary">
-          &copy; 2024 FinanceScope
+          &copy; 2025 FinanceScope
         </Typography>
       </Box>
     </>

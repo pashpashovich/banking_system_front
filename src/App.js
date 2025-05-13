@@ -17,6 +17,9 @@ import ClientsAccPage from './pages/ClientsProfileAccs/clientsAccs';
 import ClientsAccTrPage from './pages/ClientAccsTransactions/clientAccsTransactions';
 import ClientReportPage from './pages/userReportPage/userReportPage'
 import ResetPasswordPage from "./pages/ResetPass/ResetPasswordPage";
+import ClientLoanPage from "./pages/loans/ClientLoanPage";
+import AnalystLoanPage from "./pages/loans/AlalystLoanPage";
+
 
 
 
@@ -42,6 +45,8 @@ function App() {
                 <Route path="/analysis/:userID" element={<TransactionsReport/>} />
                 <Route path="/forbidden" element={<Forbidden />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/loans/:userID" element={<ClientLoanPage />} />
+                <Route path="/loan-requests/:userID" element={<AnalystLoanPage />} />
             </Routes>
         </Router>
     </div>

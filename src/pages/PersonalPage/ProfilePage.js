@@ -60,6 +60,19 @@ const HiddenInput = styled(Input)({
   display: "none",
 });
 
+const translateRoleType = (role) => {
+  switch (role) {
+    case "DIRECTOR":
+      return "Директор";
+    case "CLIENT":
+      return "Клиент";
+    case "ADMIN":
+      return "Администратор";
+    default:
+      return "Неизвестно";
+  }
+};
+
 const Profile = () => {
   const { userID } = useParams();
   const navigate = useNavigate();
@@ -87,7 +100,7 @@ const Profile = () => {
           navigate("/");
         }
       });
-      axios
+    axios
       .get(`${apiUrl}/users/${userID}/avatar`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -218,10 +231,15 @@ const Profile = () => {
             <Typography
               variant="h4"
               sx={{ color: "#24695C", fontWeight: "bold" }}
-            >{`${firstName} ${secondName} ${patronymicName}`}</Typography>
-            <Typography variant="h6" color="textSecondary">
-              {role}
+            >{`${secondName} ${firstName}  ${patronymicName}`}</Typography>
+            <Typography
+              variant="h6"
+              color="textSecondary"
+              sx={{ textTransform: "none" }}
+            >
+              {translateRoleType(role)}
             </Typography>
+
             <ProfileCard>
               <CardContent>
                 <Grid container spacing={2}>

@@ -316,7 +316,7 @@ const ClientProfilePage = () => {
               onChange={handleAvatarChange}
             />
             <Typography variant="h5" sx={{ color: "#24695C", fontWeight: "bold" }}>
-              {secondName} {firstName} {patronymicName}
+              {firstName} {secondName} {patronymicName}
             </Typography>
             <Typography variant="body2" sx={{ marginTop: 1 }}>
               Роль: {translateRoleType(role)}

@@ -60,6 +60,19 @@ const HiddenInput = styled(Input)({
   display: "none",
 });
 
+const translateRoleType = (role) => {
+  switch (role) {
+    case "DIRECTOR":
+      return "Директор";
+    case "CLIENT":
+      return "Клиент";
+    case "ADMIN":
+      return "Администратор";
+    default:
+      return "Неизвестно";
+  }
+};
+
 const DirectorProfile = () => {
   const { userID } = useParams();
   const navigate = useNavigate();
@@ -218,9 +231,9 @@ const DirectorProfile = () => {
             <Typography
               variant="h4"
               sx={{ color: "#24695C", fontWeight: "bold" }}
-            >{`${firstName} ${secondName} ${patronymicName}`}</Typography>
+            >{`${secondName} ${firstName} ${patronymicName}`}</Typography>
             <Typography variant="h6" color="textSecondary">
-              {role}
+              {translateRoleType(role)}
             </Typography>
             <ProfileCard>
               <CardContent>

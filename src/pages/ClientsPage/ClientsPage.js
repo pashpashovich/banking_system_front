@@ -1,41 +1,40 @@
-import React, { useState, useEffect } from "react";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import LogoutIcon from "@mui/icons-material/Logout";
+import {
+  Alert,
+  AppBar,
+  Box,
+  Button,
+  Container,
+  CssBaseline,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Toolbar,
+  Typography,
+  Avatar,
+} from "@mui/material";
+import { styled } from "@mui/system";
 import {
   DataGrid,
   GridToolbarContainer,
   GridToolbarQuickFilter,
 } from "@mui/x-data-grid";
-import {
-  IconButton,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Container,
-  AppBar,
-  Toolbar,
-  CssBaseline,
-  Avatar,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Alert,
-  MenuItem,
-  Paper,
-  Select,
-  FormControl,
-  InputLabel,
-} from "@mui/material";
-import { styled } from "@mui/system";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import CloseIcon from "@mui/icons-material/Close";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Menu from "../../components/verticalMenu/menu";
-import LogoutIcon from "@mui/icons-material/Logout";
-import axios from "axios";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import InputAdornment from "@mui/material/InputAdornment";
 
 const apiUrl = "http://localhost:8080/api";
 
@@ -77,7 +76,7 @@ const DataGridStyled = styled(DataGrid)({
 
 const DialogTitleStyled = styled(DialogTitle)({
   textAlign: "center",
-  textTransform: "capitalize",
+  textTransform: "none",
   fontWeight: "bold",
 });
 
@@ -104,6 +103,8 @@ function ClientsDataGrid() {
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const handleTogglePassword = () => setShowPassword((prev) => !prev);
   const [newClientData, setNewClientData] = useState({
     login: "",
     password: "",
@@ -127,15 +128,31 @@ function ClientsDataGrid() {
     socialPayments: "",
   });
   const [selectedClientForEdit, setSelectedClientForEdit] = useState(null);
-  const [selectedClientForAccount, setSelectedClientForAccount] = useState(null);
+  const [selectedClientForAccount, setSelectedClientForAccount] =
+    useState(null);
   const [openAddClientDialog, setOpenAddClientDialog] = useState(false);
   const [openEditClientDialog, setOpenEditClientDialog] = useState(false);
   const [openAddAccountDialog, setOpenAddAccountDialog] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [avatar, setAvatar] = useState(null);
 
   useEffect(() => {
     fetchClients();
+    axios
+      .get(`${apiUrl}/users/${userID}/avatar`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      })
+      .then((response) => {
+        if (response.data) {
+          setAvatar(`data:image/jpeg;base64,${response.data}`);
+        }
+      })
+      .catch((error) => {
+        console.error("Ошибка загрузки аватара:", error);
+      });
   }, [userID]);
 
   const fetchClients = async () => {
@@ -182,20 +199,19 @@ function ClientsDataGrid() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await axios.post(`${apiUrl}/createClient`, newClientData, {
+      await axios.post(`${apiUrl}/auth/signUp`, newClientData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       });
       setSuccess("Клиент успешно добавлен.");
-      fetchClients(); 
-      handleCloseAddClient(); 
+      fetchClients();
+      handleCloseAddClient();
     } catch (error) {
       console.error("Ошибка при добавлении клиента:", error);
       setError("Произошла ошибка при добавлении клиента.");
     }
   };
-  
 
   const handleOpenAddClient = () => setOpenAddClientDialog(true);
   const handleCloseAddClient = () => {
@@ -293,14 +309,23 @@ function ClientsDataGrid() {
         );
       case "SOCIAL":
         return (
-          <TextField
-            label="Тип социальной выплаты"
-            name="socialPayments"
-            value={newAccountData.socialPayments}
-            onChange={handleAccountInputChange}
-            fullWidth
-            margin="normal"
-          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Социальные выплаты</InputLabel>
+            <Select
+              label="Социальные выплаты"
+              name="socialPayments"
+              value={newAccountData.socialPayments === true ? "true" : "false"}
+              onChange={(e) =>
+                setNewAccountData((prev) => ({
+                  ...prev,
+                  socialPayments: e.target.value === "true",
+                }))
+              }
+            >
+              <MenuItem value="true">Да</MenuItem>
+              <MenuItem value="false">Нет</MenuItem>
+            </Select>
+          </FormControl>
         );
       default:
         return null;
@@ -365,7 +390,10 @@ function ClientsDataGrid() {
           <Toolbar>
             <Typography variant="h5">Клиенты</Typography>
             <Box sx={{ flexGrow: 1 }} />
-            <Avatar src="/static/images/avatar/1.jpg" />
+            <Avatar
+              alt="avatar"
+              src={avatar || "/static/images/avatar/1.jpg"}
+            />{" "}
             <IconButton onClick={() => navigate("/")}>
               <LogoutIcon sx={{ color: "white" }} />
             </IconButton>
@@ -437,7 +465,6 @@ function ClientsDataGrid() {
         </Container>
       </Box>
 
-      {/* Модальное окно добавления клиента */}
       <Dialog
         open={openAddClientDialog}
         onClose={handleCloseAddClient}
@@ -457,17 +484,39 @@ function ClientsDataGrid() {
               { name: "income", label: "Доход" },
               { name: "mobilePhone", label: "Телефон" },
               { name: "address", label: "Адрес" },
-            ].map(({ name, label }) => (
-              <TextField
-                key={name}
-                label={label}
-                name={name}
-                value={newClientData[name]}
-                onChange={handleClientInputChange}
-                fullWidth
-                margin="normal"
-              />
-            ))}
+            ].map(({ name, label }) =>
+              name === "password" ? (
+                <TextField
+                  key="password"
+                  label="Пароль"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={newClientData.password}
+                  onChange={handleClientInputChange}
+                  fullWidth
+                  margin="normal"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleTogglePassword} edge="end">
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              ) : (
+                <TextField
+                  key={name}
+                  label={label}
+                  name={name}
+                  value={newClientData[name]}
+                  onChange={handleClientInputChange}
+                  fullWidth
+                  margin="normal"
+                />
+              )
+            )}
           </Box>
         </DialogContent>
         <DialogActions
@@ -481,7 +530,6 @@ function ClientsDataGrid() {
         </DialogActions>
       </Dialog>
 
-      {/* Модальное окно редактирования клиента */}
       {selectedClientForEdit && (
         <Dialog
           open={openEditClientDialog}
@@ -552,7 +600,6 @@ function ClientsDataGrid() {
         </Dialog>
       )}
 
-      {/* Модальное окно добавления счета */}
       {selectedClientForAccount && (
         <Dialog
           open={openAddAccountDialog}

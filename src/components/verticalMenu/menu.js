@@ -1,62 +1,62 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { styled } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import HomeIcon from '@mui/icons-material/Home';
-import DataUsageIcon from '@mui/icons-material/DataUsage';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import logo from './../../images/logo.png';
+import React from "react";
+import { Link } from "react-router-dom";
+import { styled } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Typography from "@mui/material/Typography";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
+import HomeIcon from "@mui/icons-material/Home";
+import DataUsageIcon from "@mui/icons-material/DataUsage";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import logo from "./../../images/logo.png";
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+
 
 const drawerWidth = 240;
 
 const MenuContainer = styled(Box)({
-  display: 'flex',
+  display: "flex",
 });
 
 const DrawerHeader = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
+  display: "flex",
+  alignItems: "center",
   padding: theme.spacing(2),
-  backgroundColor: '#24695C',
-  color: 'white',
-  justifyContent: 'center',
-  fontWeight: 'bold',
+  backgroundColor: "#24695C",
+  color: "white",
+  justifyContent: "center",
+  fontWeight: "bold",
 }));
 
-
-
 const StyledDrawer = styled(Drawer)({
-  '.MuiDrawer-paper': {
-    backgroundColor: '#D9D9D9',
-    color: '#24695C',
+  ".MuiDrawer-paper": {
+    backgroundColor: "#D9D9D9",
+    color: "#24695C",
     width: drawerWidth,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 
 const ListItemStyled = styled(ListItem)({
-  '&:hover': {
-    backgroundColor: '#b0aeae',
+  "&:hover": {
+    backgroundColor: "#b0aeae",
   },
 });
 
 const MenuButtonContainer = styled(Box)(({ theme }) => ({
-  position: 'absolute',
+  position: "absolute",
   top: theme.spacing(6),
   left: theme.spacing(1),
-  zIndex: 1300, 
-  [theme.breakpoints.up('sm')]: {
-    display: 'none',
+  zIndex: 1300,
+  [theme.breakpoints.up("sm")]: {
+    display: "none",
   },
 }));
 
@@ -77,32 +77,38 @@ const ClientMenu = ({ userID }) => {
       <List>
         <ListItemStyled button component={Link} to={`/profile/${userID}`}>
           <ListItemIcon>
-            <HomeIcon style={{ color: '#24695C' }} />
+            <HomeIcon style={{ color: "#24695C" }} />
           </ListItemIcon>
           <ListItemText primary="Профиль" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/data/${userID}`}>
           <ListItemIcon>
-            <DataUsageIcon style={{ color: '#24695C' }} />
+            <DataUsageIcon style={{ color: "#24695C" }} />
           </ListItemIcon>
           <ListItemText primary="Данные" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/analysis/${userID}`}>
           <ListItemIcon>
-            <AssessmentIcon style={{ color: '#24695C' }} />
+            <AssessmentIcon style={{ color: "#24695C" }} />
           </ListItemIcon>
           <ListItemText primary="Анализ" />
         </ListItemStyled>
         <ListItemStyled button component={Link} to={`/analytics/${userID}`}>
           <ListItemIcon>
-            <ShowChartIcon style={{ color: '#24695C' }} />
+            <ShowChartIcon style={{ color: "#24695C" }} />
           </ListItemIcon>
           <ListItemText primary="Графики" />
+        </ListItemStyled>
+        <ListItemStyled button component={Link} to={`/loan-requests/${userID}`}>
+          <ListItemIcon>
+            <CreditCardIcon style={{ color: "#24695C" }} />
+          </ListItemIcon>
+          <ListItemText primary="Заявки на займы" />
         </ListItemStyled>
       </List>
       <Box sx={{ flexGrow: 1 }} />
       <Divider />
-      <Box sx={{ p: 2, textAlign: 'center' }}>
+      <Box sx={{ p: 2, textAlign: "center" }}>
         <Typography variant="body2" color="textSecondary">
           &copy; 2025 FinanceScope
         </Typography>
@@ -122,7 +128,10 @@ const ClientMenu = ({ userID }) => {
           <MenuIcon />
         </IconButton>
       </MenuButtonContainer>
-      <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
+      <Box
+        component="nav"
+        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+      >
         <StyledDrawer
           variant="temporary"
           open={mobileOpen}
@@ -131,7 +140,7 @@ const ClientMenu = ({ userID }) => {
             keepMounted: true,
           }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
+            display: { xs: "block", sm: "none" },
           }}
         >
           {drawer}
@@ -139,7 +148,7 @@ const ClientMenu = ({ userID }) => {
         <StyledDrawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: 'block' },
+            display: { xs: "none", sm: "block" },
           }}
           open
         >

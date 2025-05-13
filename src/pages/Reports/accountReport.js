@@ -148,9 +148,21 @@ const TransactionsReport = () => {
       field: "transactionTime",
       headerName: "Дата",
       width: 220,
-      valueGetter: (params) => new Date(params.row.transactionTime),
+      valueFormatter: (params) =>
+        new Date(params.value).toLocaleString("ru-RU", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
     },
-    { field: "transactionType", headerName: "Тип", width: 130 },
+    {
+      field: "transactionType",
+      headerName: "Тип",
+      width: 130,
+      valueFormatter: (params) => translateAccountType(params.value),
+    },
   ];
 
   useEffect(() => {
@@ -222,6 +234,19 @@ const TransactionsReport = () => {
       console.error("Ошибка при загрузке статистики:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const translateAccountType = (role) => {
+    switch (role) {
+      case "TRANSFER":
+        return "Перевод";
+      case "WITHDRAWAL":
+        return "Снятие";
+      case "DEPOSIT":
+        return "Начисление";
+      default:
+        return "Неизвестно";
     }
   };
 
